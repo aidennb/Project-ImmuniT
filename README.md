@@ -1,4 +1,4 @@
-# Project ImmuniT - ACCELERATED Development Timeline
+# Project ImmuniT - Development Timeline
 
 ## Executive Summary
 **Project Duration:** 8 weeks (2 months)
