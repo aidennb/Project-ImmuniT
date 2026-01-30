@@ -641,5 +641,3 @@
 - [ ] Assign owners to each task
 - [ ] Set up daily standup time
 - [ ] Prepare for Day 1 infrastructure sprint
-
-—
