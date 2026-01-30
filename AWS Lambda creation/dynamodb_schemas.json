@@ -1,0 +1,448 @@
+{
+  "tables": {
+    "ImmuniT-Users": {
+      "description": "Core user profile and account information",
+      "attributes": [
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "email",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "created_at",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "user_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "email-index",
+          "Keys": [
+            {
+              "AttributeName": "email",
+              "KeyType": "HASH"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "user_id": "usr_1234567890",
+        "email": "john.doe@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "date_of_birth": "1990-05-15",
+        "nationality": "United States",
+        "created_at": 1704067200,
+        "updated_at": 1704067200,
+        "profile_complete": true,
+        "consent_hipaa": true,
+        "consent_research": false
+      }
+    },
+    "ImmuniT-TestResults": {
+      "description": "Raw peptide reactivity data from PepSeq analysis",
+      "attributes": [
+        {
+          "AttributeName": "test_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "test_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "test_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-date-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "test_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "test_id": "test_20250130_001",
+        "user_id": "usr_1234567890",
+        "test_date": 1704067200,
+        "sample_id": "SAMPLE-2025-001",
+        "processing_status": "completed",
+        "data_location": "s3://immunit-raw-data/usr_1234567890/test_20250130_001.json",
+        "peptide_count": 100243,
+        "quality_score": 0.98
+      }
+    },
+    "ImmuniT-VaccineRecords": {
+      "description": "Vaccination history and protection status",
+      "attributes": [
+        {
+          "AttributeName": "record_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "admin_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "record_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-vaccine-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "admin_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "record_id": "vax_20240315_covid19",
+        "user_id": "usr_1234567890",
+        "vaccine_name": "COVID-19 (Pfizer-BioNTech)",
+        "vaccine_type": "mRNA",
+        "manufacturer": "Pfizer-BioNTech",
+        "admin_date": 1710460800,
+        "next_due_date": 1726272000,
+        "batch_number": "FK1234",
+        "location": "CVS Pharmacy, New York",
+        "provider": "Dr. Smith",
+        "dose_number": 5,
+        "protection_status": "protected",
+        "efficacy_percentile": 82
+      }
+    },
+    "ImmuniT-ImmunityMetrics": {
+      "description": "Calculated immunity metrics and trends",
+      "attributes": [
+        {
+          "AttributeName": "metric_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "calculated_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "metric_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-metrics-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "calculated_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "metric_id": "metric_20250130_vaccines",
+        "user_id": "usr_1234567890",
+        "metric_type": "vaccine_protection",
+        "calculated_date": 1706601600,
+        "test_id": "test_20250130_001",
+        "vaccines": {
+          "COVID-19": {
+            "protection_level": 82,
+            "status": "protected",
+            "antibody_titer": 550,
+            "population_percentile": 75,
+            "trend": "declining",
+            "next_booster_date": 1726272000
+          },
+          "Influenza": {
+            "protection_level": 45,
+            "status": "waning",
+            "antibody_titer": 120,
+            "population_percentile": 50,
+            "trend": "stable",
+            "next_booster_date": 1717200000
+          }
+        }
+      }
+    },
+    "ImmuniT-AutoimmuneMarkers": {
+      "description": "Autoimmune antibody reactivity data",
+      "attributes": [
+        {
+          "AttributeName": "marker_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "test_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "marker_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-autoimmune-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "test_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "marker_id": "auto_20250130_001",
+        "user_id": "usr_1234567890",
+        "test_id": "test_20250130_001",
+        "test_date": 1706601600,
+        "markers": {
+          "TPO": {
+            "reactivity_level": 25,
+            "population_percentile": 92,
+            "risk_status": "low",
+            "associated_conditions": ["Hashimoto's thyroiditis", "Graves' disease"]
+          },
+          "ANA": {
+            "reactivity_level": 48,
+            "population_percentile": 50,
+            "risk_status": "stable",
+            "associated_conditions": ["Lupus", "Scleroderma"]
+          }
+        },
+        "overall_risk_score": 15,
+        "flagged_markers": []
+      }
+    },
+    "ImmuniT-AllergenData": {
+      "description": "Food and environmental allergen reactivity",
+      "attributes": [
+        {
+          "AttributeName": "allergen_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "test_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "allergen_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-allergen-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "test_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "allergen_id": "allergy_20250130_001",
+        "user_id": "usr_1234567890",
+        "test_id": "test_20250130_001",
+        "test_date": 1706601600,
+        "food_allergens": {
+          "peanut": {
+            "reactivity": 18,
+            "risk_level": "low",
+            "population_percentile": 15
+          },
+          "milk": {
+            "reactivity": 5,
+            "risk_level": "very_low",
+            "population_percentile": 5
+          }
+        },
+        "environmental_allergens": {
+          "pollen": {
+            "reactivity": 75,
+            "risk_level": "high",
+            "population_percentile": 85,
+            "seasonal_pattern": true
+          },
+          "dust_mites": {
+            "reactivity": 45,
+            "risk_level": "moderate",
+            "population_percentile": 55
+          }
+        }
+      }
+    },
+    "ImmuniT-NeuroprotectiveMarkers": {
+      "description": "Protective antibodies against neurodegenerative proteins",
+      "attributes": [
+        {
+          "AttributeName": "neuro_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "user_id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "test_date",
+          "AttributeType": "N"
+        }
+      ],
+      "keySchema": [
+        {
+          "AttributeName": "neuro_id",
+          "KeyType": "HASH"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "IndexName": "user-neuro-index",
+          "Keys": [
+            {
+              "AttributeName": "user_id",
+              "KeyType": "HASH"
+            },
+            {
+              "AttributeName": "test_date",
+              "KeyType": "RANGE"
+            }
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        }
+      ],
+      "sampleRecord": {
+        "neuro_id": "neuro_20250130_001",
+        "user_id": "usr_1234567890",
+        "test_id": "test_20250130_001",
+        "test_date": 1706601600,
+        "markers": {
+          "beta_amyloid": {
+            "antibody_level": 450,
+            "population_percentile": 85,
+            "status": "protective",
+            "protective_threshold": 300
+          },
+          "tau": {
+            "antibody_level": 380,
+            "population_percentile": 78,
+            "status": "protective",
+            "protective_threshold": 250
+          },
+          "alpha_synuclein": {
+            "antibody_level": 220,
+            "population_percentile": 55,
+            "status": "moderate",
+            "protective_threshold": 300
+          },
+          "TDP_43": {
+            "antibody_level": 410,
+            "population_percentile": 82,
+            "status": "protective",
+            "protective_threshold": 280
+          },
+          "HERV_K_Env": {
+            "antibody_level": 180,
+            "population_percentile": 48,
+            "status": "moderate",
+            "protective_threshold": 250
+          },
+          "heat_shock_proteins": {
+            "antibody_level": 520,
+            "population_percentile": 88,
+            "status": "protective",
+            "protective_threshold": 350
+          }
+        },
+        "overall_protection_score": 82
+      }
+    }
+  }
+}
