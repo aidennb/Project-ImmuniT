@@ -1,0 +1,1250 @@
+--- PAGE 1 ---
+================================================================================
+ImmuniT - Source Code (Last 25 Pages)
+Copyright 2026 ImmuniT
+Title: ImmuniT
+================================================================================
+
+================================================================================
+FILE: website/styles.css
+================================================================================
+/* =============================================================================
+   ImmuniT Website — Design System
+   Style: Accessible & Ethical
+   Colors: Healthcare cyan + green
+   Typography: Figtree / Noto Sans
+   ============================================================================= */
+
+/* --- Reset & Base --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Colors from UI/UX Pro Max */
+  --primary: #0891B2;
+  --primary-dark: #0E7490;
+  --on-primary: #FFFFFF;
+  --secondary: #22D3EE;
+  --accent: #059669;
+  --accent-light: #D1FAE5;
+  --bg: #F8FAFB;
+  --bg-alt: #ECFEFF;
+  --surface: #FFFFFF;
+  --text: #164E63;
+  --text-muted: #64748B;
+  --text-heading: #0F172A;
+  --border: #E2E8F0;
+  --destructive: #DC2626;
+  --warning: #F59E0B;
+  --ring: #0891B2;
+
+  /* Typography */
+  --font-heading: 'Figtree', system-ui, sans-serif;
+  --font-body: 'Noto Sans', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+--- PAGE 2 ---
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--primary-dark); }
+a:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+
+/* --- A11y --- */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  z-index: 1000;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+--- PAGE 3 ---
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.btn--primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.btn--primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: var(--on-primary); }
+.btn--outline { background: transparent; color: var(--primary); border-color: var(--border); }
+.btn--outline:hover { border-color: var(--primary); background: var(--bg-alt); }
+.btn--ghost { background: transparent; color: var(--text); border-color: transparent; }
+.btn--ghost:hover { background: var(--bg-alt); color: var(--primary); }
+.btn--lg { padding: 14px 28px; font-size: 16px; }
+
+/* --- Navigation --- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248, 250, 251, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav__logo {
+  display: flex;
+  align-items: center;
+--- PAGE 4 ---
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-heading);
+  text-decoration: none;
+}
+.nav__logo-icon { flex-shrink: 0; }
+.nav__logo-accent { color: var(--primary); }
+.nav__links {
+  display: flex;
+  gap: 32px;
+}
+.nav__link {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.nav__link:hover { color: var(--text-heading); }
+.nav__actions { display: flex; gap: 12px; }
+.nav__toggle { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 8px; }
+
+@media (max-width: 768px) {
+  .nav__links { display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--surface); padding: 16px 24px; border-bottom: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.08); gap: 16px; }
+  .nav__links--open { display: flex; }
+  .nav__actions { display: none; }
+  .nav__toggle { display: block; }
+}
+
+/* --- Section shared --- */
+.section__container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.section__header { text-align: center; max-width: 720px; margin: 0 auto var(--space-3xl); }
+.section__eyebrow { display: inline-block; font-family: var(--font-heading); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary); margin-bottom: 12px; }
+.section__title { font-family: var(--font-heading); font-size: clamp(28px, 4vw, 42px); font-weight: 800; line-height: 1.15; color: var(--text-heading); margin-bottom: 16px; }
+.section__subtitle { font-size: 18px; color: var(--text-muted); line-height: 1.65; }
+
+/* --- Hero --- */
+.hero { padding: var(--space-4xl) 0 var(--space-3xl); background: linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%); }
+.hero__container { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.hero__badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-light); color: var(--accent); font-family: var(--font-heading); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-full); margin-bottom: 24px; }
+.hero__title { font-family: var(--font-heading); font-size: clamp(36px, 5vw, 56px); font-weight: 900; line-height: 1.08; color: var(--text-heading); margin-bottom: 20px; }
+.hero__title-accent { color: var(--primary); }
+.hero__subtitle { font-size: 18px; line-height: 1.7; color: var(--text-muted); margin-bottom: 32px; max-width: 520px; }
+.hero__cta { display: flex; gap: 16px; margin-bottom: 48px; flex-wrap: wrap; }
+.hero__stats { display: flex; gap: 24px; align-items: center; }
+.hero__stat-value { display: block; font-family: var(--font-heading); font-size: 28px; font-weight: 800; color: var(--text-heading); }
+.hero__stat-label { font-size: 13px; color: var(--text-muted); }
+--- PAGE 5 ---
+.hero__stat-divider { width: 1px; height: 40px; background: var(--border); }
+
+/* Phone mockup */
+.hero__visual { display: flex; justify-content: center; }
+.hero__phone {
+  width: 280px;
+  background: var(--text-heading);
+  border-radius: 32px;
+  padding: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.hero__phone-screen {
+  background: linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 40%, #F2FDF6 100%);
+  border-radius: 22px;
+  padding: 24px 16px 0;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+.phone-header { margin-bottom: 16px; }
+.phone-header__greeting { display: block; font-family: var(--font-heading); font-size: 18px; font-weight: 800; color: var(--text-heading); }
+.phone-header__name { font-size: 13px; color: var(--text-muted); }
+.phone-card { background: var(--surface); border-radius: var(--radius-md); padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex: 1; }
+.phone-card__title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-heading); margin-bottom: 12px; }
+.phone-card__item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; color: var(--text); }
+.phone-card__item + .phone-card__item { border-top: 1px solid #F3F4F6; }
+.phone-card__score { border-top: 1px solid #E5E7EB; padding-top: 12px; margin-top: 8px; display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+.phone-card__score-value { font-family: var(--font-heading); font-weight: 800; font-size: 18px; color: var(--primary); }
+
+.badge { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-full); }
+.badge--green { background: #DBFAE6; color: #166534; }
+.badge--yellow { background: #FEF3C7; color: #92400E; }
+
+.phone-nav { display: flex; justify-content: space-around; padding: 12px 0 8px; margin-top: auto; border-top: 1px solid #F3F4F6; }
+.phone-nav__item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: var(--text-muted); }
+.phone-nav__item--active { color: var(--primary); }
+
+@media (max-width: 768px) {
+  .hero__container { grid-template-columns: 1fr; gap: 48px; text-align: center; }
+  .hero__subtitle { margin: 0 auto 32px; }
+  .hero__cta { justify-content: center; }
+  .hero__stats { justify-content: center; }
+}
+
+/* --- Features --- */
+.features { padding: var(--space-4xl) 0; }
+.features__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature-card {
+  background: var(--surface);
+--- PAGE 6 ---
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08); }
+.feature-card__icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.feature-card__icon--blue { background: #DBEAFE; color: #2563EB; }
+.feature-card__icon--teal { background: #CCFBF1; color: #0D9488; }
+.feature-card__icon--green { background: #D1FAE5; color: #059669; }
+.feature-card__icon--purple { background: #EDE9FE; color: #7C3AED; }
+.feature-card__icon--orange { background: #FFEDD5; color: #EA580C; }
+.feature-card__icon--red { background: #FEE2E2; color: #DC2626; }
+.feature-card__title { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-heading); margin-bottom: 8px; }
+.feature-card__desc { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+
+@media (max-width: 768px) { .features__grid { grid-template-columns: 1fr; } }
+@media (min-width: 769px) and (max-width: 1024px) { .features__grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* --- Science --- */
+.science { padding: var(--space-4xl) 0; background: var(--bg-alt); }
+.science__steps { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; align-items: flex-start; }
+.science__step { grid-column: span 2; text-align: center; }
+.science__connector { grid-column: span 1; display: flex; align-items: center; justify-content: center; padding-top: 24px; }
+.science__connector::before { content: ''; width: 100%; height: 2px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 1px; }
+.science__step-number { font-family: var(--font-heading); font-size: 48px; font-weight: 900; color: var(--primary); opacity: 0.2; line-height: 1; margin-bottom: 12px; }
+.science__step-title { font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--text-heading); margin-bottom: 8px; }
+.science__step-desc { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .science__steps { grid-template-columns: 1fr; gap: 32px; }
+  .science__step { grid-column: span 1; }
+  .science__connector { display: none; }
+}
+
+/* --- Demo --- */
+.demo { padding: var(--space-4xl) 0; }
+.demo__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.demo__card { background: var(--surface); border-radius: var(--radius-lg); padding: 28px; border: 1px solid var(--border); }
+.demo__card--michael { border-color: #FCA5A5; }
+.demo__card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.demo__avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 700; font-size: 16px; }
+.demo__avatar--alert { background: var(--destructive); }
+.demo__name { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-heading); }
+--- PAGE 7 ---
+.demo__risk { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-full); }
+.demo__risk--moderate { background: #FEF3C7; color: #92400E; }
+.demo__risk--high { background: #FEE2E2; color: #991B1B; }
+.demo__metrics { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.demo__metric { display: grid; grid-template-columns: 140px 1fr 40px; align-items: center; gap: 12px; }
+.demo__metric-label { font-size: 13px; color: var(--text-muted); }
+.demo__metric-value { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--text-heading); text-align: right; }
+.demo__bar { height: 8px; background: #F1F5F9; border-radius: 4px; overflow: hidden; }
+.demo__bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.demo__bar-fill--green { background: #059669; }
+.demo__bar-fill--blue { background: var(--primary); }
+.demo__bar-fill--teal { background: #0D9488; }
+.demo__bar-fill--yellow { background: #F59E0B; }
+.demo__bar-fill--orange { background: #EA580C; }
+.demo__bar-fill--red { background: #DC2626; }
+.demo__insight { font-size: 14px; color: var(--text-muted); line-height: 1.6; padding-top: 16px; border-top: 1px solid var(--border); }
+.demo__alert { display: flex; gap: 12px; align-items: flex-start; background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius-sm); padding: 16px; }
+.demo__alert strong { display: block; font-size: 14px; color: #991B1B; margin-bottom: 4px; }
+.demo__alert p { font-size: 13px; color: #7F1D1D; line-height: 1.5; margin: 0; }
+.demo__alert svg { flex-shrink: 0; margin-top: 2px; }
+.demo__footnote { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 32px; max-width: 640px; margin-left: auto; margin-right: auto; }
+
+@media (max-width: 768px) { .demo__grid { grid-template-columns: 1fr; } .demo__metric { grid-template-columns: 110px 1fr 36px; } }
+
+/* --- API Section --- */
+.api-section { padding: var(--space-4xl) 0; background: var(--text-heading); color: #CBD5E1; }
+.api-section .section__eyebrow { color: var(--secondary); }
+.api-section .section__title { color: var(--on-primary); }
+.api-section .section__subtitle { color: #94A3B8; }
+.api-section__layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.api-section__endpoints { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+.api-section__endpoints code { font-size: 14px; padding: 8px 14px; background: rgba(255,255,255,0.06); border-radius: var(--radius-sm); color: var(--secondary); font-family: 'SF Mono', 'Fira Code', monospace; }
+.code-block { background: #1E293B; border-radius: var(--radius-md); overflow: hidden; border: 1px solid #334155; }
+.code-block__header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #0F172A; }
+.code-block__dot { width: 12px; height: 12px; border-radius: 50%; }
+.code-block__dot--red { background: #EF4444; }
+.code-block__dot--yellow { background: #F59E0B; }
+.code-block__dot--green { background: #22C55E; }
+.code-block__title { margin-left: 8px; font-size: 12px; color: #64748B; }
+.code-block__body { padding: 20px; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 0; }
+.code-block__body code { font-family: 'SF Mono', 'Fira Code', monospace; }
+.code-kw { color: #38BDF8; }
+.code-str { color: #4ADE80; }
+.code-key { color: #A78BFA; }
+.code-val { color: #FB923C; }
+.code-comment { color: #475569; }
+
+@media (max-width: 768px) { .api-section__layout { grid-template-columns: 1fr; gap: 40px; } }
+
+--- PAGE 8 ---
+/* --- Waitlist --- */
+.waitlist { padding: var(--space-4xl) 0; background: linear-gradient(135deg, var(--bg-alt) 0%, #D1FAE5 100%); }
+.waitlist__content { max-width: 640px; margin: 0 auto; text-align: center; }
+.waitlist__title { font-family: var(--font-heading); font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: var(--text-heading); margin-bottom: 16px; }
+.waitlist__subtitle { font-size: 18px; color: var(--text-muted); margin-bottom: 32px; }
+.waitlist__input-group { display: flex; gap: 12px; }
+.waitlist__input {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-family: var(--font-body);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.waitlist__input:focus { border-color: var(--primary); }
+.waitlist__note { font-size: 13px; color: var(--text-muted); margin-top: 16px; }
+.waitlist__success { font-size: 18px; font-weight: 600; color: var(--accent); margin-top: 16px; }
+
+@media (max-width: 480px) { .waitlist__input-group { flex-direction: column; } }
+
+/* --- About --- */
+.about { padding: var(--space-4xl) 0; }
+.about__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.about__text { font-size: 16px; line-height: 1.7; color: var(--text-muted); margin-top: 16px; }
+.about__tech { background: var(--bg-alt); border-radius: var(--radius-lg); padding: 28px; }
+.about__tech-title { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-heading); margin-bottom: 20px; }
+.about__tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.about__tech-item { padding: 12px; background: var(--surface); border-radius: var(--radius-sm); }
+.about__tech-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.about__tech-item span:last-child { font-size: 14px; font-weight: 500; color: var(--text-heading); }
+
+@media (max-width: 768px) { .about__grid { grid-template-columns: 1fr; gap: 40px; } }
+
+/* --- Footer --- */
+.footer { background: var(--text-heading); color: #94A3B8; padding: var(--space-3xl) 0 var(--space-lg); }
+.footer__container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.footer__top { display: flex; justify-content: space-between; padding-bottom: var(--space-xl); border-bottom: 1px solid #1E293B; gap: 48px; flex-wrap: wrap; }
+.footer__brand { font-family: var(--font-heading); font-size: 22px; font-weight: 800; color: var(--on-primary); display: block; margin-bottom: 8px; }
+.footer__tagline { font-size: 14px; line-height: 1.6; }
+.footer__links { display: flex; gap: 64px; }
+.footer__col { display: flex; flex-direction: column; gap: 8px; }
+.footer__col-title { font-family: var(--font-heading); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: #CBD5E1; margin-bottom: 4px; }
+.footer__col a { font-size: 14px; color: #94A3B8; transition: color 0.2s; }
+.footer__col a:hover { color: var(--on-primary); }
+.footer__bottom { padding-top: var(--space-lg); font-size: 13px; }
+--- PAGE 9 ---
+
+@media (max-width: 768px) { .footer__links { gap: 32px; } }
+
+/* --- Animations --- */
+.animate-in { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.animate-in.visible { opacity: 1; transform: translateY(0); }
+.animate-in:nth-child(2) { transition-delay: 0.1s; }
+.animate-in:nth-child(3) { transition-delay: 0.2s; }
+.animate-in:nth-child(4) { transition-delay: 0.3s; }
+.animate-in:nth-child(5) { transition-delay: 0.4s; }
+.animate-in:nth-child(6) { transition-delay: 0.5s; }
+
+================================================================================
+FILE: website/index.html
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ImmuniT — Your personalized immunity passport powered by PepSeq peptide microarray technology. Track vaccines, monitor autoimmune markers, and protect cognitive health." />
+  <title>ImmuniT — Personalized Immunity Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Skip Link (A11y) -->
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__container">
+      <a href="#" class="nav__logo" aria-label="ImmuniT home">
+        <img src="assets/logo.svg" alt="" width="36" height="40" class="nav__logo-icon" aria-hidden="true" />
+        <span>Immuni<span class="nav__logo-accent">T</span></span>
+      </a>
+      <div class="nav__links" id="nav-links">
+        <a href="#features" class="nav__link">Features</a>
+        <a href="#science" class="nav__link">Science</a>
+        <a href="#demo" class="nav__link">Demo</a>
+        <a href="#about" class="nav__link">About</a>
+      </div>
+      <div class="nav__actions">
+        <a href="https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod/health" class="btn btn--outline" target="_blank" rel="noopener">API Status</a>
+        <a href="#waitlist" class="btn btn--primary">Join Waitlist</a>
+      </div>
+      <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+--- PAGE 10 ---
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero__container">
+        <div class="hero__content">
+          <div class="hero__badge">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="4" fill="#059669"/></svg>
+            <span>Now in Clinical Research</span>
+          </div>
+          <h1 class="hero__title">
+            Your immune system,<br />
+            <span class="hero__title-accent">decoded.</span>
+          </h1>
+          <p class="hero__subtitle">
+            ImmuniT uses PepSeq peptide microarray technology to map your complete immune profile — vaccines, autoimmune risks, allergens, and neuroprotective markers — into one personalized health passport.
+          </p>
+          <div class="hero__cta">
+            <a href="#waitlist" class="btn btn--primary btn--lg">Get Early Access</a>
+            <a href="#demo" class="btn btn--ghost btn--lg">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+              See It In Action
+            </a>
+          </div>
+          <div class="hero__stats">
+            <div class="hero__stat">
+              <span class="hero__stat-value">100K+</span>
+              <span class="hero__stat-label">Peptides Analyzed</span>
+            </div>
+            <div class="hero__stat-divider"></div>
+            <div class="hero__stat">
+              <span class="hero__stat-value">14</span>
+              <span class="hero__stat-label">API Endpoints</span>
+            </div>
+            <div class="hero__stat-divider"></div>
+            <div class="hero__stat">
+              <span class="hero__stat-value">6</span>
+              <span class="hero__stat-label">Biomarker Categories</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero__visual">
+          <div class="hero__phone">
+            <div class="hero__phone-screen">
+              <div class="phone-header">
+--- PAGE 11 ---
+                <span class="phone-header__greeting">Welcome</span>
+                <span class="phone-header__name">Sarah Johnson</span>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card__title">Immunity Summary</div>
+                <div class="phone-card__item">
+                  <span>COVID-19</span>
+                  <span class="badge badge--green">Protected</span>
+                </div>
+                <div class="phone-card__item">
+                  <span>Influenza</span>
+                  <span class="badge badge--green">Protected</span>
+                </div>
+                <div class="phone-card__item">
+                  <span>Hepatitis A</span>
+                  <span class="badge badge--yellow">Waning</span>
+                </div>
+                <div class="phone-card__score">
+                  <span>Overall Protection</span>
+                  <span class="phone-card__score-value">75%</span>
+                </div>
+              </div>
+              <div class="phone-nav">
+                <div class="phone-nav__item phone-nav__item--active">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2L2 8v10h6v-6h4v6h6V8z"/></svg>
+                  <span>Home</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 3"/></svg>
+                  <span>Tracker</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 3v5l4 2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                  <span>Passport</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="6" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                  <span>Profile</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+      <div class="section__container">
+--- PAGE 12 ---
+        <div class="section__header">
+          <span class="section__eyebrow">Complete Immune Intelligence</span>
+          <h2 class="section__title">Six dimensions of immune health, one platform.</h2>
+          <p class="section__subtitle">ImmuniT goes beyond traditional vaccine tracking to give you a comprehensive view of your entire immune system.</p>
+        </div>
+        <div class="features__grid">
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--blue">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="4" stroke="currentColor" stroke-width="2"/><path d="M9 14l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="feature-card__title">Vaccine Tracker</h3>
+            <p class="feature-card__desc">Track all vaccinations with real-time protection status, booster recommendations, and antibody titer trends over time.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--teal">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="10" stroke="currentColor" stroke-width="2"/><path d="M14 4v20M4 14h20M7 7l14 14M21 7L7 21" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg>
+            </div>
+            <h3 class="feature-card__title">Autoimmunity Radar</h3>
+            <p class="feature-card__desc">Monitor autoimmune markers like TPO, ANA, and GAD65 with risk scoring and specialist referral triggers.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--green">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 4c-4 0-8 3-8 8 0 6 8 14 8 14s8-8 8-14c0-5-4-8-8-8z" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Allergen Explorer</h3>
+            <p class="feature-card__desc">Map food and environmental allergen reactivity with seasonal patterns, population comparisons, and symptom tracking.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--purple">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 3L4 9v10l10 6 10-6V9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 15v8M4 9l10 6 10-6" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Cognitive Protection</h3>
+            <p class="feature-card__desc">Track neuroprotective antibodies against beta-amyloid, tau, and Poly-GA — biomarkers for early neurodegenerative detection.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--orange">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="4" y="8" width="20" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M4 14h20M10 8V5a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Immunity Passport</h3>
+            <p class="feature-card__desc">Generate verifiable immunity passports with QR codes for travel, clinical trials, and healthcare provider sharing.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--red">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M4 20l4-8 4 4 4-10 4 6 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="24" cy="8" r="2" fill="currentColor"/></svg>
+            </div>
+            <h3 class="feature-card__title">Risk Scoring</h3>
+            <p class="feature-card__desc">Composite risk assessment combining vaccine protection, autoimmune indicators, and neuroprotective scores with clinical flags.</p>
+          </div>
+        </div>
+--- PAGE 13 ---
+      </div>
+    </section>
+
+    <!-- Science / How It Works -->
+    <section class="science" id="science">
+      <div class="section__container">
+        <div class="section__header">
+          <span class="section__eyebrow">Powered by PepSeq</span>
+          <h2 class="section__title">From 100,000 peptides to actionable insights.</h2>
+          <p class="section__subtitle">Our platform transforms raw PepSeq microarray data into clinically meaningful immune intelligence.</p>
+        </div>
+        <div class="science__steps">
+          <div class="science__step">
+            <div class="science__step-number">01</div>
+            <h3 class="science__step-title">Sample Collection</h3>
+            <p class="science__step-desc">A single blood draw is processed through PepSeq peptide microarray technology, testing reactivity against 100,000+ peptide sequences.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">02</div>
+            <h3 class="science__step-title">Z-Score Analysis</h3>
+            <p class="science__step-desc">Raw reactivity data is normalized into Z-scores against population baselines, flagging statistically significant elevations like Poly-GA at 41.95&sigma;.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">03</div>
+            <h3 class="science__step-title">Risk Classification</h3>
+            <p class="science__step-desc">Our algorithm classifies markers across vaccine protection, autoimmune risk, allergen reactivity, and neuroprotective status into actionable categories.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">04</div>
+            <h3 class="science__step-title">Personalized Dashboard</h3>
+            <p class="science__step-desc">Results appear in your mobile app within minutes — with trend tracking, booster recommendations, and critical alerts for specialist referrals.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Demo / Case Study -->
+    <section class="demo" id="demo">
+      <div class="section__container">
+        <div class="section__header">
+          <span class="section__eyebrow">Real Patient Data</span>
+          <h2 class="section__title">Early detection that traditional healthcare misses.</h2>
+        </div>
+        <div class="demo__grid">
+          <div class="demo__card demo__card--sarah">
+            <div class="demo__card-header">
+--- PAGE 14 ---
+              <div class="demo__avatar">SJ</div>
+              <div>
+                <h3 class="demo__name">Sarah Johnson</h3>
+                <span class="demo__risk demo__risk--moderate">Moderate Risk</span>
+              </div>
+            </div>
+            <div class="demo__metrics">
+              <div class="demo__metric">
+                <span class="demo__metric-label">Vaccine Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--green" style="width: 75%"></div>
+                </div>
+                <span class="demo__metric-value">75%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Autoimmune Risk</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--blue" style="width: 12%"></div>
+                </div>
+                <span class="demo__metric-value">12%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Neuro Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--teal" style="width: 73%"></div>
+                </div>
+                <span class="demo__metric-value">73%</span>
+              </div>
+            </div>
+            <p class="demo__insight">Stable immune profile with seasonal pollen allergy. Hepatitis A booster recommended.</p>
+          </div>
+          <div class="demo__card demo__card--michael">
+            <div class="demo__card-header">
+              <div class="demo__avatar demo__avatar--alert">MC</div>
+              <div>
+                <h3 class="demo__name">Michael Chen</h3>
+                <span class="demo__risk demo__risk--high">High Risk</span>
+              </div>
+            </div>
+            <div class="demo__metrics">
+              <div class="demo__metric">
+                <span class="demo__metric-label">Vaccine Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--yellow" style="width: 66%"></div>
+                </div>
+                <span class="demo__metric-value">66%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Autoimmune Risk</span>
+--- PAGE 15 ---
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--orange" style="width: 35%"></div>
+                </div>
+                <span class="demo__metric-value">35%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Neuro Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--red" style="width: 32%"></div>
+                </div>
+                <span class="demo__metric-value">32%</span>
+              </div>
+            </div>
+            <div class="demo__alert">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2L2 18h16L10 2z" stroke="#DC2626" stroke-width="2"/><path d="M10 8v4M10 14v1" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/></svg>
+              <div>
+                <strong>Critical: Poly-GA Z-score 41.95</strong>
+                <p>C9orf72 ALS/FTD indicator detected. Urgent neurological referral recommended.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="demo__footnote">Demo data based on anonymized clinical research. ImmuniT detected Michael's neurodegenerative biomarker elevation months before symptoms would appear in traditional screening.</p>
+      </div>
+    </section>
+
+    <!-- API Section -->
+    <section class="api-section" id="api">
+      <div class="section__container">
+        <div class="api-section__layout">
+          <div class="api-section__info">
+            <span class="section__eyebrow">Developer-Ready</span>
+            <h2 class="section__title">Production API, live today.</h2>
+            <p class="section__subtitle">14 RESTful endpoints backed by PostgreSQL on AWS. Cognito authentication, CORS-enabled, sub-500ms response times.</p>
+            <div class="api-section__endpoints">
+              <code>GET /dashboard/summary</code>
+              <code>GET /vaccines/recommendations</code>
+              <code>GET /autoimmune-markers</code>
+              <code>GET /neuroprotective-markers</code>
+              <code>GET /allergens</code>
+              <code>GET /antibody-trends</code>
+              <code>GET /risk-score</code>
+              <code>GET /immunity-passports</code>
+            </div>
+          </div>
+          <div class="api-section__code">
+            <div class="code-block">
+              <div class="code-block__header">
+                <span class="code-block__dot code-block__dot--red"></span>
+--- PAGE 16 ---
+                <span class="code-block__dot code-block__dot--yellow"></span>
+                <span class="code-block__dot code-block__dot--green"></span>
+                <span class="code-block__title">curl — Risk Score</span>
+              </div>
+              <pre class="code-block__body"><code><span class="code-kw">curl</span> <span class="code-str">"https://ri2ubpde14.execute-api\
+  .us-west-2.amazonaws.com/prod\
+  /risk-score?user_id=c3d4e5f6..."</span>
+
+<span class="code-comment"># Response</span>
+{
+  <span class="code-key">"composite_risk_score"</span>: <span class="code-val">71.8</span>,
+  <span class="code-key">"risk_level"</span>: <span class="code-str">"critical"</span>,
+  <span class="code-key">"critical_flags"</span>: [{
+    <span class="code-key">"marker"</span>: <span class="code-str">"Poly_GA"</span>,
+    <span class="code-key">"z_score"</span>: <span class="code-val">41.95</span>,
+    <span class="code-key">"status"</span>: <span class="code-str">"critical_elevation"</span>
+  }]
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Waitlist / CTA -->
+    <section class="waitlist" id="waitlist">
+      <div class="section__container">
+        <div class="waitlist__content">
+          <h2 class="waitlist__title">Ready to decode your immunity?</h2>
+          <p class="waitlist__subtitle">Join the waitlist for early access to ImmuniT. Be among the first to get your personalized immune profile.</p>
+          <form class="waitlist__form" onsubmit="event.preventDefault(); document.getElementById('waitlist-success').hidden = false; this.hidden = true;">
+            <div class="waitlist__input-group">
+              <label for="waitlist-email" class="sr-only">Email address</label>
+              <input type="email" id="waitlist-email" class="waitlist__input" placeholder="Enter your email" required aria-label="Email address" />
+              <button type="submit" class="btn btn--primary btn--lg">Join Waitlist</button>
+            </div>
+          </form>
+          <p class="waitlist__success" id="waitlist-success" hidden>Thank you! We'll be in touch soon.</p>
+          <p class="waitlist__note">HIPAA-compliant. Your data is encrypted end-to-end.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about" id="about">
+      <div class="section__container">
+        <div class="about__grid">
+          <div>
+            <span class="section__eyebrow">About ImmuniT</span>
+--- PAGE 17 ---
+            <h2 class="section__title">Built at the intersection of immunology and technology.</h2>
+            <p class="about__text">ImmuniT was born from clinical research at ASU, where PepSeq peptide microarray technology revealed that comprehensive immune profiling could detect health risks months before traditional screening.</p>
+            <p class="about__text">Our platform transforms complex peptide reactivity data into clear, actionable insights — from vaccine booster timing to early neurodegenerative biomarker detection.</p>
+          </div>
+          <div class="about__tech">
+            <h3 class="about__tech-title">Tech Stack</h3>
+            <div class="about__tech-grid">
+              <div class="about__tech-item">
+                <span class="about__tech-label">Frontend</span>
+                <span>React Native (Expo)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Backend</span>
+                <span>AWS Lambda + API Gateway</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Database</span>
+                <span>PostgreSQL (RDS)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Auth</span>
+                <span>AWS Cognito (JWT)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Data Science</span>
+                <span>PepSeq + Z-Score Analysis</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Compliance</span>
+                <span>HIPAA + AES-256</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__container">
+      <div class="footer__top">
+        <div>
+          <span class="footer__brand">
+            <img src="assets/logo.svg" alt="" width="28" height="32" style="display:inline-block;vertical-align:middle;margin-right:8px" aria-hidden="true" />
+            Immuni<span class="nav__logo-accent">T</span>
+          </span>
+          <p class="footer__tagline">Personalized immunity intelligence<br/>powered by PepSeq technology.</p>
+        </div>
+--- PAGE 18 ---
+        <div class="footer__links">
+          <div class="footer__col">
+            <span class="footer__col-title">Product</span>
+            <a href="#features">Features</a>
+            <a href="#demo">Demo</a>
+            <a href="#api">API</a>
+          </div>
+          <div class="footer__col">
+            <span class="footer__col-title">Company</span>
+            <a href="#about">About</a>
+            <a href="#science">Research</a>
+            <a href="#waitlist">Contact</a>
+          </div>
+          <div class="footer__col">
+            <span class="footer__col-title">Legal</span>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">HIPAA Notice</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; 2026 ImmuniT. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    const toggle = document.getElementById('nav-toggle');
+    const links = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', !expanded);
+      links.classList.toggle('nav__links--open');
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Close mobile nav if open
+          links.classList.remove('nav__links--open');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+--- PAGE 19 ---
+    });
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('.feature-card, .science__step, .demo__card, .api-section__code').forEach(el => {
+      el.classList.add('animate-in');
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
+
+================================================================================
+FILE: immunit/components/RadarChart.tsx
+================================================================================
+import React from 'react';
+import { Dimensions, View } from 'react-native';
+import Svg, { Circle, G, Line, Polygon, Text as SvgText } from 'react-native-svg';
+
+interface RadarChartProps {
+  data: {
+    label: string;
+    value: number;
+  }[];
+  datasets: {
+    data: number[];
+    color: string;
+    fillColor: string;
+  }[];
+  width?: number;
+  height?: number;
+}
+
+export default function RadarChart({ 
+  data, 
+  datasets, 
+  width = Dimensions.get('window').width - 40,
+  height = 300 
+}: RadarChartProps) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(centerX, centerY) - 60;
+--- PAGE 20 ---
+  const maxValue = 5;
+  const levels = 5;
+
+  // Calculate angle for each point
+  const angleStep = (2 * Math.PI) / data.length;
+
+  // Generate grid lines (concentric polygons)
+  const generateGridLines = () => {
+    const lines = [];
+    for (let level = 1; level <= levels; level++) {
+      const levelRadius = (radius * level) / levels;
+      const points = data.map((_, index) => {
+        const angle = index * angleStep - Math.PI / 2;
+        const x = centerX + levelRadius * Math.cos(angle);
+        const y = centerY + levelRadius * Math.sin(angle);
+        return `${x},${y}`;
+      }).join(' ');
+      
+      lines.push(
+        <Polygon
+          key={`grid-${level}`}
+          points={points}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth="1"
+        />
+      );
+    }
+    return lines;
+  };
+
+  // Generate axis lines
+  const generateAxisLines = () => {
+    return data.map((_, index) => {
+      const angle = index * angleStep - Math.PI / 2;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      
+      return (
+        <Line
+          key={`axis-${index}`}
+          x1={centerX}
+          y1={centerY}
+          x2={x}
+          y2={y}
+          stroke="#E5E7EB"
+          strokeWidth="1"
+        />
+      );
+--- PAGE 21 ---
+    });
+  };
+
+  // Generate labels
+  const generateLabels = () => {
+    return data.map((item, index) => {
+      const angle = index * angleStep - Math.PI / 2;
+      const labelRadius = radius + 30;
+      const x = centerX + labelRadius * Math.cos(angle);
+      const y = centerY + labelRadius * Math.sin(angle);
+      
+      return (
+        <SvgText
+          key={`label-${index}`}
+          x={x}
+          y={y}
+          fontSize="12"
+          fill="#6B7280"
+          textAnchor="middle"
+          alignmentBaseline="middle"
+        >
+          {item.label}
+        </SvgText>
+      );
+    });
+  };
+
+  // Generate value labels on grid
+  const generateValueLabels = () => {
+    const labels = [];
+    for (let level = 1; level <= levels; level++) {
+      const value = (maxValue * level) / levels;
+      const levelRadius = (radius * level) / levels;
+      
+      labels.push(
+        <SvgText
+          key={`value-${level}`}
+          x={centerX + 5}
+          y={centerY - levelRadius + 3}
+          fontSize="10"
+          fill="#9CA3AF"
+          textAnchor="start"
+        >
+          {value.toFixed(1)}
+        </SvgText>
+      );
+    }
+    return labels;
+  };
+--- PAGE 22 ---
+
+  // Generate data polygons
+  const generateDataPolygons = () => {
+    return datasets.map((dataset, datasetIndex) => {
+      const points = dataset.data.map((value, index) => {
+        const angle = index * angleStep - Math.PI / 2;
+        const valueRadius = (radius * value) / maxValue;
+        const x = centerX + valueRadius * Math.cos(angle);
+        const y = centerY + valueRadius * Math.sin(angle);
+        return `${x},${y}`;
+      }).join(' ');
+
+      return (
+        <G key={`dataset-${datasetIndex}`}>
+          <Polygon
+            points={points}
+            fill={dataset.fillColor}
+            stroke={dataset.color}
+            strokeWidth="2"
+            fillOpacity="0.3"
+          />
+          {dataset.data.map((value, index) => {
+            const angle = index * angleStep - Math.PI / 2;
+            const valueRadius = (radius * value) / maxValue;
+            const x = centerX + valueRadius * Math.cos(angle);
+            const y = centerY + valueRadius * Math.sin(angle);
+            
+            return (
+              <Circle
+                key={`point-${datasetIndex}-${index}`}
+                cx={x}
+                cy={y}
+                r="4"
+                fill={dataset.color}
+              />
+            );
+          })}
+        </G>
+      );
+    });
+  };
+
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Svg width={width} height={height}>
+        {generateGridLines()}
+        {generateAxisLines()}
+        {generateValueLabels()}
+        {generateDataPolygons()}
+--- PAGE 23 ---
+        {generateLabels()}
+      </Svg>
+    </View>
+  );
+}
+
+================================================================================
+FILE: immunit/app/screens/VaccineTrendsScreen.tsx
+================================================================================
+import React, { useState } from 'react';
+import {
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import Svg, {
+    Circle,
+    Line,
+    Path,
+    Rect,
+    Text as SvgText,
+} from 'react-native-svg';
+// Import these packages when implementing actual PDF export:
+// import * as Print from 'expo-print';
+// import * as Sharing from 'expo-sharing';
+
+interface DataPoint {
+  x: number;
+  y: number;
+  value: number;
+}
+
+interface DropdownButtonProps {
+  title: string;
+  value: string;
+  onPress: () => void;
+}
+
+interface NoteItemProps {
+  text: string;
+--- PAGE 24 ---
+  isToggled?: boolean;
+  onToggle?: () => void;
+}
+
+interface ActionButtonProps {
+  title: string;
+  icon: string;
+  onPress: () => void;
+  style?: object;
+}
+
+const VaccineTrendsScreen: React.FC = () => {
+  const [selectedVaccine, setSelectedVaccine] = useState<string>('COVID-19');
+  const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2023 - Jun 2025');
+  const [showVaccineModal, setShowVaccineModal] = useState<boolean>(false);
+  const [showDateModal, setShowDateModal] = useState<boolean>(false);
+  const [noteToggleStates, setNoteToggleStates] = useState<{[key: string]: boolean}>({
+    lastDose: true,
+    nextRecommended: true,
+    protectionThreshold: false,
+  });
+
+  const vaccineOptions = [
+    'COVID-19',
+    'Influenza',
+    'Hepatitis B',
+    'Tetanus',
+    'MMR',
+    'Pneumococcal',
+    'HPV',
+    'Meningococcal'
+  ];
+
+  const dateRangeOptions = [
+    'Jan 2023 - Jun 2025',
+    'Jan 2022 - Dec 2024',
+    'Jun 2023 - Dec 2025',
+    'Last 6 months',
+    'Last 12 months',
+    'Last 24 months'
+  ];
+
+  // Sample data points for the antibody titer trend (varies by vaccine and toggles)
+  const getDataPoints = (): DataPoint[] => {
+    let basePoints: DataPoint[] = [];
+
+    switch (selectedVaccine) {
+      case 'COVID-19':
+        basePoints = [
+--- PAGE 25 ---
+          { x: 10, y: 30, value: 800 },
+          { x: 40, y: 55, value: 650 },
+          { x: 70, y: 70, value: 500 },
+          { x: 100, y: 85, value: 400 },
+          { x: 130, y: 105, value: 300 },
+          { x: 160, y: 125, value: 250 },
+          { x: 190, y: 145, value: 200 },
+          { x: 220, y: 165, value: 150 },
+          { x: 250, y: 180, value: 100 },
+        ];
+        break;
+      case 'Influenza':
+        basePoints = [
+          { x: 10, y: 35, value: 700 },
+          { x: 40, y: 65, value: 550 },
+          { x: 70, y: 80, value: 400 },
+          { x: 100, y: 95, value: 300 },
+          { x: 130, y: 115, value: 200 },
+          { x: 160, y: 135, value: 150 },
+          { x: 190, y: 155, value: 100 },
+          { x: 220, y: 175, value: 80 },
+          { x: 250, y: 190, value: 60 },
+        ];
+        break;
+      default:
+        basePoints = [
+          { x: 10, y: 30, value: 750 },
+          { x: 40, y: 60, value: 600 },
+          { x: 70, y: 75, value: 450 },
+          { x: 100, y: 90, value: 350 },
+          { x: 130, y: 110, value: 250 },
+          { x: 160, y: 130, value: 200 },
+          { x: 190, y: 150, value: 150 },
+          { x: 220, y: 170, value: 120 },
+          { x: 250, y: 185, value: 90 },
+        ];
+    }
+
+    // Adjust data based on toggle states
+    if (noteToggleStates.lastDose) {
+      basePoints = basePoints.map(point => ({
+        ...point,
+        y: point.y - 10, // Boost from recent dose
+        value: point.value * 1.2
+      }));
+    }
+
+    if (noteToggleStates.nextRecommended) {
+      basePoints = basePoints.map((point, index) => ({
