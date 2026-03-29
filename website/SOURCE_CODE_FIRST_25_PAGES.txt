@@ -1,0 +1,1274 @@
+================================================================================
+ImmuniT - Source Code (First 25 Pages)
+Copyright 2026 ImmuniT
+Title: ImmuniT
+================================================================================
+
+================================================================================
+FILE: lambda/lambda_handler.py
+PAGE 1 of SOURCE CODE
+================================================================================
+"""
+ImmuniT Enhanced Lambda Handler
+Unified API handler for immunity passport platform
+Connects to PostgreSQL (RDS) with Cognito authentication
+"""
+
+import json
+import os
+import logging
+from datetime import datetime, date
+from decimal import Decimal
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Database configuration (set via Lambda environment variables)
+DB_HOST = os.environ.get('DB_HOST', 'immunit-devt.c1ie608407to.us-west-2.rds.amazonaws.com')
+DB_NAME = os.environ.get('DB_NAME', 'test_immunit')
+DB_USER = os.environ.get('DB_USER', 'immunit_rw')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+DB_PORT = os.environ.get('DB_PORT', '5432')
+
+
+def get_db_connection():
+    """Create a database connection."""
+    return psycopg2.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT,
+        connect_timeout=5,
+    )
+
+
+class JSONEncoder(json.JSONEncoder):
+    """Handle datetime and Decimal serialization."""
+--- PAGE 2 ---
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
+
+
+def respond(status_code, body):
+    """Format API Gateway response."""
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        },
+        'body': json.dumps(body, cls=JSONEncoder),
+    }
+
+
+def get_user_id_from_event(event):
+    """Extract user_id from Cognito authorizer or path parameters."""
+    # Try Cognito claims first
+    claims = (event.get('requestContext', {})
+              .get('authorizer', {})
+              .get('claims', {}))
+    cognito_sub = claims.get('sub')
+
+    if cognito_sub:
+        conn = get_db_connection()
+        try:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    "SELECT user_id FROM users WHERE cognito_sub = %s",
+                    (cognito_sub,),
+                )
+                row = cur.fetchone()
+                if row:
+                    return str(row['user_id'])
+        finally:
+            conn.close()
+
+    # Fall back to path parameters or query string
+    path_params = event.get('pathParameters') or {}
+    query_params = event.get('queryStringParameters') or {}
+    return path_params.get('user_id') or query_params.get('user_id')
+
+
+--- PAGE 3 ---
+# ---------------------------------------------------------------------------
+# Dashboard endpoints
+# ---------------------------------------------------------------------------
+
+def get_dashboard_summary(user_id):
+    """GET /dashboard/summary - Main dashboard overview."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Latest immunity metrics
+            cur.execute("""
+                SELECT vaccine_data, overall_score, risk_level, calculated_date
+                FROM immunity_metrics
+                WHERE user_id = %s
+                ORDER BY calculated_date DESC LIMIT 1
+            """, (user_id,))
+            metrics = cur.fetchone()
+
+            # Vaccine summary
+            cur.execute("""
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN protection_status = 'protected' THEN 1 ELSE 0 END) as protected,
+                       SUM(CASE WHEN protection_status = 'waning' THEN 1 ELSE 0 END) as waning,
+                       SUM(CASE WHEN protection_status = 'not_protected' THEN 1 ELSE 0 END) as unprotected
+                FROM vaccine_records WHERE user_id = %s
+            """, (user_id,))
+            vaccines = cur.fetchone()
+
+            # Neuroprotective score
+            cur.execute("""
+                SELECT overall_protection_score, markers
+                FROM neuroprotective_markers
+                WHERE user_id = %s
+                ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            neuro = cur.fetchone()
+
+            # Autoimmune risk
+            cur.execute("""
+                SELECT overall_risk_score, flagged_markers
+                FROM autoimmune_markers
+                WHERE user_id = %s
+                ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            autoimmune = cur.fetchone()
+
+            # User info
+            cur.execute("""
+                SELECT first_name, last_name FROM users WHERE user_id = %s
+            """, (user_id,))
+--- PAGE 4 ---
+            user = cur.fetchone()
+
+            # Build risk flags
+            risk_flags = []
+            if neuro and neuro.get('markers'):
+                markers = neuro['markers'] if isinstance(neuro['markers'], dict) else {}
+                for name, data in markers.items():
+                    if isinstance(data, dict) and data.get('status') in ('critical_elevation', 'low'):
+                        z = data.get('z_score', 0)
+                        if isinstance(z, (int, float)) and (z > 3 or z < -2):
+                            risk_flags.append({
+                                'marker': name,
+                                'z_score': z,
+                                'status': data['status'],
+                                'note': data.get('clinical_note', ''),
+                            })
+
+            return respond(200, {
+                'user': user,
+                'overall_score': metrics['overall_score'] if metrics else 0,
+                'risk_level': metrics['risk_level'] if metrics else 'unknown',
+                'vaccine_summary': vaccines,
+                'neuro_protection_score': neuro['overall_protection_score'] if neuro else 0,
+                'autoimmune_risk_score': autoimmune['overall_risk_score'] if autoimmune else 0,
+                'flagged_autoimmune': autoimmune['flagged_markers'] if autoimmune else [],
+                'risk_flags': risk_flags,
+                'last_test_date': metrics['calculated_date'] if metrics else None,
+            })
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Vaccine endpoints
+# ---------------------------------------------------------------------------
+
+def get_vaccinations(user_id):
+    """GET /vaccinations - List all vaccine records."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT record_id, vaccine_name, vaccine_type, manufacturer,
+                       admin_date, next_due_date, dose_number,
+                       protection_status, efficacy_percentile
+                FROM vaccine_records
+                WHERE user_id = %s
+                ORDER BY admin_date DESC
+            """, (user_id,))
+            records = cur.fetchall()
+--- PAGE 5 ---
+            return respond(200, {'vaccinations': records, 'total': len(records)})
+    finally:
+        conn.close()
+
+
+def get_vaccine_recommendations(user_id):
+    """GET /vaccines/recommendations - Booster recommendations."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT vaccine_name, protection_status, efficacy_percentile,
+                       admin_date, next_due_date
+                FROM vaccine_records
+                WHERE user_id = %s
+                ORDER BY admin_date DESC
+            """, (user_id,))
+            records = cur.fetchall()
+
+            recommendations = []
+            today = date.today()
+
+            for rec in records:
+                next_due = rec.get('next_due_date')
+                status = rec['protection_status']
+
+                if status == 'not_protected':
+                    urgency, priority = 'urgent', 1
+                    msg = 'Booster needed immediately'
+                elif status == 'waning':
+                    urgency, priority = 'high', 2
+                    msg = 'Booster recommended within 1 month'
+                elif next_due and next_due <= today:
+                    urgency, priority = 'moderate', 3
+                    msg = 'Booster overdue'
+                else:
+                    urgency, priority = 'none', 5
+                    msg = 'Protection adequate'
+
+                recommendations.append({
+                    'vaccine_name': rec['vaccine_name'],
+                    'current_status': status,
+                    'efficacy_percentile': rec['efficacy_percentile'],
+                    'last_dose_date': rec['admin_date'],
+                    'next_due_date': next_due,
+                    'urgency': urgency,
+                    'priority': priority,
+                    'recommendation': msg,
+                })
+
+--- PAGE 6 ---
+            recommendations.sort(key=lambda x: x['priority'])
+
+            return respond(200, {
+                'recommendations': recommendations,
+                'urgent_count': sum(1 for r in recommendations if r['urgency'] == 'urgent'),
+                'high_priority_count': sum(1 for r in recommendations if r['urgency'] == 'high'),
+            })
+    finally:
+        conn.close()
+
+
+def get_vaccine_trends(user_id):
+    """GET /vaccines/trends - Antibody trend data for vaccines."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT marker_name, measurement_date, value, z_score, percentile, unit
+                FROM antibody_trends
+                WHERE user_id = %s AND marker_category = 'vaccine'
+                ORDER BY marker_name, measurement_date
+            """, (user_id,))
+            rows = cur.fetchall()
+
+            trends = {}
+            for row in rows:
+                name = row['marker_name']
+                if name not in trends:
+                    trends[name] = []
+                trends[name].append({
+                    'date': row['measurement_date'],
+                    'value': row['value'],
+                    'z_score': row['z_score'],
+                    'percentile': row['percentile'],
+                    'unit': row['unit'],
+                })
+
+            return respond(200, {'vaccine_trends': trends})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Immunity metrics endpoints
+# ---------------------------------------------------------------------------
+
+def get_immunity_metrics(user_id):
+    """GET /immunity-metrics - Full immunity metrics."""
+    conn = get_db_connection()
+    try:
+--- PAGE 7 ---
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT metric_type, vaccine_data, overall_score, risk_level, calculated_date
+                FROM immunity_metrics
+                WHERE user_id = %s
+                ORDER BY calculated_date DESC LIMIT 1
+            """, (user_id,))
+            metrics = cur.fetchone()
+
+            if not metrics:
+                return respond(404, {'error': 'No immunity metrics found'})
+
+            return respond(200, {'immunity_metrics': metrics})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Autoimmune markers endpoints
+# ---------------------------------------------------------------------------
+
+def get_autoimmune_markers(user_id):
+    """GET /autoimmune-markers - Autoimmune antibody data."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT markers, overall_risk_score, flagged_markers, test_date
+                FROM autoimmune_markers
+                WHERE user_id = %s
+                ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            data = cur.fetchone()
+
+            if not data:
+                return respond(404, {'error': 'No autoimmune data found'})
+
+            return respond(200, {'autoimmune_data': data})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Allergen endpoints
+# ---------------------------------------------------------------------------
+
+def get_allergens(user_id):
+    """GET /allergens - Allergen reactivity data."""
+    conn = get_db_connection()
+    try:
+--- PAGE 8 ---
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT food_allergens, environmental_allergens, test_date
+                FROM allergen_data
+                WHERE user_id = %s
+                ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            data = cur.fetchone()
+
+            if not data:
+                return respond(404, {'error': 'No allergen data found'})
+
+            return respond(200, {'allergen_data': data})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Neuroprotective endpoints
+# ---------------------------------------------------------------------------
+
+def get_neuroprotective_markers(user_id):
+    """GET /neuroprotective-markers - Cognitive protection data."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT markers, overall_protection_score, test_date
+                FROM neuroprotective_markers
+                WHERE user_id = %s
+                ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            data = cur.fetchone()
+
+            if not data:
+                return respond(404, {'error': 'No neuroprotective data found'})
+
+            return respond(200, {'neuroprotective_data': data})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Antibody trends endpoints
+# ---------------------------------------------------------------------------
+
+def get_antibody_trends(user_id):
+    """GET /antibody-trends - All antibody trend data."""
+    conn = get_db_connection()
+    try:
+--- PAGE 9 ---
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT marker_name, marker_category, measurement_date,
+                       value, z_score, percentile, unit
+                FROM antibody_trends
+                WHERE user_id = %s
+                ORDER BY marker_category, marker_name, measurement_date
+            """, (user_id,))
+            rows = cur.fetchall()
+
+            trends = {}
+            for row in rows:
+                category = row['marker_category']
+                name = row['marker_name']
+                key = f"{category}/{name}"
+                if key not in trends:
+                    trends[key] = {
+                        'marker_name': name,
+                        'category': category,
+                        'data_points': [],
+                    }
+                trends[key]['data_points'].append({
+                    'date': row['measurement_date'],
+                    'value': row['value'],
+                    'z_score': row['z_score'],
+                    'percentile': row['percentile'],
+                    'unit': row['unit'],
+                })
+
+            return respond(200, {'antibody_trends': list(trends.values())})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Immunity passport endpoints
+# ---------------------------------------------------------------------------
+
+def get_immunity_passports(user_id):
+    """GET /immunity-passports - Immunity passport data."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT passport_id, issued_date, expiry_date, status,
+                       vaccine_summary, immunity_summary, verified_by
+                FROM immunity_passports
+                WHERE user_id = %s
+                ORDER BY issued_date DESC
+            """, (user_id,))
+--- PAGE 10 ---
+            passports = cur.fetchall()
+
+            return respond(200, {'passports': passports, 'total': len(passports)})
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Risk scoring
+# ---------------------------------------------------------------------------
+
+def get_risk_score(user_id):
+    """GET /risk-score - Composite risk assessment."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Vaccine score
+            cur.execute("""
+                SELECT overall_score FROM immunity_metrics
+                WHERE user_id = %s ORDER BY calculated_date DESC LIMIT 1
+            """, (user_id,))
+            vaccine_row = cur.fetchone()
+            vaccine_score = float(vaccine_row['overall_score']) if vaccine_row else 0
+
+            # Autoimmune risk
+            cur.execute("""
+                SELECT overall_risk_score FROM autoimmune_markers
+                WHERE user_id = %s ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            auto_row = cur.fetchone()
+            autoimmune_risk = float(auto_row['overall_risk_score']) if auto_row else 0
+
+            # Neuroprotective score
+            cur.execute("""
+                SELECT overall_protection_score, markers FROM neuroprotective_markers
+                WHERE user_id = %s ORDER BY test_date DESC LIMIT 1
+            """, (user_id,))
+            neuro_row = cur.fetchone()
+            neuro_score = float(neuro_row['overall_protection_score']) if neuro_row else 0
+
+            # Check for critical markers
+            critical_flags = []
+            if neuro_row and neuro_row.get('markers'):
+                markers = neuro_row['markers'] if isinstance(neuro_row['markers'], dict) else {}
+                for name, data in markers.items():
+                    if isinstance(data, dict):
+                        z = data.get('z_score', 0)
+                        if isinstance(z, (int, float)) and abs(z) > 3:
+                            critical_flags.append({
+                                'marker': name,
+--- PAGE 11 ---
+                                'z_score': z,
+                                'status': data.get('status', 'unknown'),
+                                'clinical_note': data.get('clinical_note', ''),
+                            })
+
+            # Composite risk (higher = more at risk)
+            # vaccine_score is protection (higher = better), invert for risk
+            composite_risk = (
+                (100 - vaccine_score) * 0.3
+                + autoimmune_risk * 0.3
+                + (100 - neuro_score) * 0.4
+            )
+
+            if critical_flags:
+                composite_risk = min(100, composite_risk + 20)
+
+            if composite_risk >= 70:
+                level = 'critical'
+            elif composite_risk >= 50:
+                level = 'high'
+            elif composite_risk >= 30:
+                level = 'moderate'
+            else:
+                level = 'low'
+
+            return respond(200, {
+                'composite_risk_score': round(composite_risk, 1),
+                'risk_level': level,
+                'components': {
+                    'vaccine_protection': vaccine_score,
+                    'autoimmune_risk': autoimmune_risk,
+                    'neuroprotective_score': neuro_score,
+                },
+                'critical_flags': critical_flags,
+            })
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Data ingestion
+# ---------------------------------------------------------------------------
+
+def ingest_test_results(event):
+    """POST /test-results - Ingest new PepSeq test data."""
+    body = json.loads(event.get('body', '{}'))
+    user_id = body.get('user_id')
+    if not user_id:
+        return respond(400, {'error': 'user_id is required'})
+
+--- PAGE 12 ---
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                INSERT INTO test_results (user_id, sample_id, processing_status, peptide_count, quality_score)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING test_id
+            """, (
+                user_id,
+                body.get('sample_id', ''),
+                'processing',
+                body.get('peptide_count', 0),
+                body.get('quality_score', 0.0),
+            ))
+            test_id = cur.fetchone()['test_id']
+            conn.commit()
+
+            return respond(201, {
+                'message': 'Test results ingested',
+                'test_id': str(test_id),
+            })
+    finally:
+        conn.close()
+
+
+def add_vaccine_record(event):
+    """POST /vaccinations - Add a vaccine record."""
+    body = json.loads(event.get('body', '{}'))
+    user_id = body.get('user_id')
+    if not user_id:
+        return respond(400, {'error': 'user_id is required'})
+
+    vaccine_name = body.get('vaccine_name')
+    if not vaccine_name:
+        return respond(400, {'error': 'vaccine_name is required'})
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                INSERT INTO vaccine_records
+                    (user_id, vaccine_name, vaccine_type, manufacturer,
+                     admin_date, next_due_date, batch_number, location,
+                     provider, dose_number)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING record_id
+            """, (
+                user_id, vaccine_name,
+                body.get('vaccine_type', ''),
+                body.get('manufacturer', ''),
+--- PAGE 13 ---
+                body.get('admin_date', date.today()),
+                body.get('next_due_date'),
+                body.get('batch_number', ''),
+                body.get('location', ''),
+                body.get('provider', ''),
+                body.get('dose_number', 1),
+            ))
+            record_id = cur.fetchone()['record_id']
+            conn.commit()
+
+            return respond(201, {
+                'message': 'Vaccine record added',
+                'record_id': str(record_id),
+            })
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Health check
+# ---------------------------------------------------------------------------
+
+def health_check():
+    """GET /health - API health check."""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+        conn.close()
+        db_status = 'connected'
+    except Exception as e:
+        db_status = f'error: {str(e)}'
+
+    return respond(200, {
+        'status': 'healthy',
+        'database': db_status,
+        'version': '2.0.0',
+        'timestamp': datetime.utcnow().isoformat(),
+    })
+
+
+# ---------------------------------------------------------------------------
+# Router
+# ---------------------------------------------------------------------------
+
+ROUTES = {
+    ('GET',  '/health'):                   lambda e, uid: health_check(),
+    ('GET',  '/dashboard/summary'):        lambda e, uid: get_dashboard_summary(uid),
+    ('GET',  '/vaccinations'):             lambda e, uid: get_vaccinations(uid),
+    ('GET',  '/vaccines/recommendations'): lambda e, uid: get_vaccine_recommendations(uid),
+--- PAGE 14 ---
+    ('GET',  '/vaccines/trends'):          lambda e, uid: get_vaccine_trends(uid),
+    ('GET',  '/immunity-metrics'):         lambda e, uid: get_immunity_metrics(uid),
+    ('GET',  '/autoimmune-markers'):       lambda e, uid: get_autoimmune_markers(uid),
+    ('GET',  '/allergens'):                lambda e, uid: get_allergens(uid),
+    ('GET',  '/neuroprotective-markers'):  lambda e, uid: get_neuroprotective_markers(uid),
+    ('GET',  '/antibody-trends'):          lambda e, uid: get_antibody_trends(uid),
+    ('GET',  '/immunity-passports'):       lambda e, uid: get_immunity_passports(uid),
+    ('GET',  '/risk-score'):               lambda e, uid: get_risk_score(uid),
+    ('POST', '/test-results'):             lambda e, uid: ingest_test_results(e),
+    ('POST', '/vaccinations'):             lambda e, uid: add_vaccine_record(e),
+}
+
+
+def lambda_handler(event, context):
+    """Main Lambda entry point."""
+    logger.info("Event: %s", json.dumps(event, default=str))
+
+    method = event.get('httpMethod', '')
+    path = event.get('path', '')
+
+    # Handle CORS preflight
+    if method == 'OPTIONS':
+        return respond(200, {})
+
+    # Route lookup
+    handler = ROUTES.get((method, path))
+    if not handler:
+        return respond(404, {
+            'error': 'Not found',
+            'available_endpoints': [
+                f"{m} {p}" for (m, p) in sorted(ROUTES.keys())
+            ],
+        })
+
+    # Get user_id for authenticated endpoints
+    user_id = None
+    if path != '/health':
+        user_id = get_user_id_from_event(event)
+        if not user_id and method == 'GET':
+            return respond(401, {'error': 'user_id required (via auth or query param)'})
+
+    try:
+        return handler(event, user_id)
+    except Exception as e:
+        logger.exception("Handler error")
+        return respond(500, {'error': 'Internal server error', 'details': str(e)})
+
+================================================================================
+FILE: database/schema.sql
+PAGE 14 of SOURCE CODE
+--- PAGE 15 ---
+================================================================================
+-- =============================================================================
+-- ImmuniT PostgreSQL Database Schema
+-- Complete schema for immunity passport platform
+-- Target: Amazon RDS PostgreSQL (immunit-devt)
+-- =============================================================================
+
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =============================================================================
+-- 1. Users table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS users (
+    user_id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cognito_sub     VARCHAR(128) UNIQUE,
+    email           VARCHAR(255) UNIQUE NOT NULL,
+    first_name      VARCHAR(100),
+    last_name       VARCHAR(100),
+    date_of_birth   DATE,
+    nationality     VARCHAR(100),
+    profile_complete BOOLEAN DEFAULT FALSE,
+    consent_hipaa   BOOLEAN DEFAULT FALSE,
+    consent_research BOOLEAN DEFAULT FALSE,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_cognito_sub ON users(cognito_sub);
+
+-- =============================================================================
+-- 2. Test Results table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS test_results (
+    test_id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    sample_id           VARCHAR(50),
+    test_date           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    processing_status   VARCHAR(20) DEFAULT 'processing'
+                        CHECK (processing_status IN ('processing', 'completed', 'failed')),
+    data_location       TEXT,
+    peptide_count       INTEGER DEFAULT 0,
+    quality_score       NUMERIC(5,4) DEFAULT 0.0,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_test_results_user ON test_results(user_id, test_date DESC);
+
+-- =============================================================================
+--- PAGE 16 ---
+-- 3. Vaccine Records table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS vaccine_records (
+    record_id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    vaccine_name        VARCHAR(200) NOT NULL,
+    vaccine_type        VARCHAR(50),
+    manufacturer        VARCHAR(200),
+    admin_date          DATE NOT NULL,
+    next_due_date       DATE,
+    batch_number        VARCHAR(50),
+    location            VARCHAR(300),
+    provider            VARCHAR(200),
+    dose_number         INTEGER DEFAULT 1,
+    protection_status   VARCHAR(20) DEFAULT 'pending'
+                        CHECK (protection_status IN ('pending', 'protected', 'waning', 'not_protected')),
+    efficacy_percentile NUMERIC(5,2) DEFAULT 0,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_vaccine_records_user ON vaccine_records(user_id, admin_date DESC);
+
+-- =============================================================================
+-- 4. Immunity Metrics table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS immunity_metrics (
+    metric_id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    test_id             UUID REFERENCES test_results(test_id),
+    metric_type         VARCHAR(50) NOT NULL,
+    calculated_date     TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    vaccine_data        JSONB DEFAULT '{}',
+    overall_score       NUMERIC(5,2) DEFAULT 0,
+    risk_level          VARCHAR(20) DEFAULT 'low'
+                        CHECK (risk_level IN ('low', 'moderate', 'high', 'critical')),
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_immunity_metrics_user ON immunity_metrics(user_id, calculated_date DESC);
+
+-- =============================================================================
+-- 5. Autoimmune Markers table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS autoimmune_markers (
+    marker_id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    test_id             UUID REFERENCES test_results(test_id),
+    test_date           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    markers             JSONB DEFAULT '{}',
+    overall_risk_score  NUMERIC(5,2) DEFAULT 0,
+--- PAGE 17 ---
+    flagged_markers     TEXT[] DEFAULT '{}',
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_autoimmune_markers_user ON autoimmune_markers(user_id, test_date DESC);
+
+-- =============================================================================
+-- 6. Allergen Data table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS allergen_data (
+    allergen_id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    test_id             UUID REFERENCES test_results(test_id),
+    test_date           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    food_allergens      JSONB DEFAULT '{}',
+    environmental_allergens JSONB DEFAULT '{}',
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_allergen_data_user ON allergen_data(user_id, test_date DESC);
+
+-- =============================================================================
+-- 7. Neuroprotective Markers table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS neuroprotective_markers (
+    neuro_id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id                 UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    test_id                 UUID REFERENCES test_results(test_id),
+    test_date               TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    markers                 JSONB DEFAULT '{}',
+    overall_protection_score NUMERIC(5,2) DEFAULT 0,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_neuroprotective_markers_user ON neuroprotective_markers(user_id, test_date DESC);
+
+-- =============================================================================
+-- 8. Immunity Passports table
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS immunity_passports (
+    passport_id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    issued_date         TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expiry_date         TIMESTAMP WITH TIME ZONE,
+    status              VARCHAR(20) DEFAULT 'active'
+                        CHECK (status IN ('active', 'expired', 'revoked')),
+    qr_code_data        TEXT,
+    vaccine_summary     JSONB DEFAULT '{}',
+    immunity_summary    JSONB DEFAULT '{}',
+    verified_by         VARCHAR(200),
+--- PAGE 18 ---
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_immunity_passports_user ON immunity_passports(user_id);
+
+-- =============================================================================
+-- 9. Antibody Trends table (time-series tracking)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS antibody_trends (
+    trend_id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id             UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    marker_name         VARCHAR(100) NOT NULL,
+    marker_category     VARCHAR(50) NOT NULL
+                        CHECK (marker_category IN ('vaccine', 'autoimmune', 'neuroprotective', 'allergen')),
+    measurement_date    DATE NOT NULL,
+    value               NUMERIC(10,4) NOT NULL,
+    z_score             NUMERIC(8,4),
+    percentile          NUMERIC(5,2),
+    unit                VARCHAR(50),
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_antibody_trends_user ON antibody_trends(user_id, marker_name, measurement_date DESC);
+
+-- =============================================================================
+-- Updated_at trigger function
+-- =============================================================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+================================================================================
+FILE: database/seed_demo_patients.sql
+PAGE 18 of SOURCE CODE
+================================================================================
+-- =============================================================================
+-- ImmuniT Demo Patient Data
+-- Two patients with realistic PepSeq-derived immunity data
+-- =============================================================================
+
+-- =============================================================================
+-- Patient 1: Sarah Johnson - Moderate Risk, 75% vaccine protection
+--- PAGE 19 ---
+-- =============================================================================
+INSERT INTO users (user_id, email, first_name, last_name, date_of_birth, nationality, profile_complete, consent_hipaa, consent_research)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'sarah.johnson@demo.immunit.com',
+    'Sarah', 'Johnson',
+    '1985-03-15', 'United States',
+    TRUE, TRUE, TRUE
+) ON CONFLICT (user_id) DO NOTHING;
+
+-- Sarah's test result
+INSERT INTO test_results (test_id, user_id, sample_id, test_date, processing_status, peptide_count, quality_score)
+VALUES (
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'SAMPLE-2026-001',
+    '2026-03-15',
+    'completed',
+    115243,
+    0.9700
+) ON CONFLICT (test_id) DO NOTHING;
+
+-- Sarah's vaccine records
+INSERT INTO vaccine_records (user_id, vaccine_name, vaccine_type, manufacturer, admin_date, next_due_date, dose_number, protection_status, efficacy_percentile) VALUES
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'COVID-19 (Pfizer-BioNTech)', 'mRNA', 'Pfizer-BioNTech', '2025-09-10', '2026-09-10', 5, 'protected', 82.00),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Influenza', 'Inactivated', 'Sanofi Pasteur', '2025-10-01', '2026-10-01', 1, 'protected', 68.00),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Tetanus/Diphtheria', 'Toxoid', 'Sanofi Pasteur', '2023-06-15', '2033-06-15', 3, 'protected', 91.00),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Hepatitis B', 'Recombinant', 'GSK', '2022-01-20', '2032-01-20', 3, 'protected', 85.00),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'MMR', 'Live attenuated', 'Merck', '2020-05-10', '2050-05-10', 2, 'protected', 94.00),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Hepatitis A', 'Inactivated', 'Merck', '2024-03-12', '2029-03-12', 2, 'waning', 58.00);
+
+-- Sarah's immunity metrics
+INSERT INTO immunity_metrics (user_id, test_id, metric_type, vaccine_data, overall_score, risk_level)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    'vaccine_protection',
+    '{
+        "COVID-19": {"protection_level": 82, "status": "protected", "antibody_titer": 550, "population_percentile": 75, "trend": "stable"},
+        "Influenza": {"protection_level": 68, "status": "protected", "antibody_titer": 280, "population_percentile": 60, "trend": "declining"},
+        "Tetanus": {"protection_level": 91, "status": "protected", "antibody_titer": 720, "population_percentile": 88, "trend": "stable"},
+        "Hepatitis_B": {"protection_level": 85, "status": "protected", "antibody_titer": 410, "population_percentile": 72, "trend": "stable"},
+        "MMR": {"protection_level": 94, "status": "protected", "antibody_titer": 890, "population_percentile": 92, "trend": "stable"},
+        "Hepatitis_A": {"protection_level": 58, "status": "waning", "antibody_titer": 165, "population_percentile": 45, "trend": "declining"}
+    }',
+    75.00,
+    'moderate'
+);
+
+-- Sarah's autoimmune markers
+--- PAGE 20 ---
+INSERT INTO autoimmune_markers (user_id, test_id, markers, overall_risk_score, flagged_markers)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    '{
+        "TPO": {"reactivity_level": 12.5, "z_score": 0.8, "population_percentile": 28, "risk_status": "low", "associated_conditions": ["Hashimoto thyroiditis", "Graves disease"]},
+        "ANA": {"reactivity_level": 22.1, "z_score": 1.2, "population_percentile": 42, "risk_status": "low", "associated_conditions": ["Lupus", "Scleroderma"]},
+        "RF": {"reactivity_level": 8.3, "z_score": 0.4, "population_percentile": 18, "risk_status": "low", "associated_conditions": ["Rheumatoid arthritis"]},
+        "Anti-CCP": {"reactivity_level": 5.7, "z_score": 0.2, "population_percentile": 12, "risk_status": "low", "associated_conditions": ["Rheumatoid arthritis"]},
+        "Anti-dsDNA": {"reactivity_level": 15.4, "z_score": 0.9, "population_percentile": 35, "risk_status": "low", "associated_conditions": ["Systemic lupus erythematosus"]},
+        "GAD65": {"reactivity_level": 18.9, "z_score": 1.1, "population_percentile": 38, "risk_status": "low", "associated_conditions": ["Type 1 diabetes"]}
+    }',
+    12.00,
+    '{}'
+);
+
+-- Sarah's allergen data
+INSERT INTO allergen_data (user_id, test_id, food_allergens, environmental_allergens)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    '{
+        "peanut": {"reactivity": 8, "risk_level": "very_low", "population_percentile": 10},
+        "milk": {"reactivity": 22, "risk_level": "low", "population_percentile": 30},
+        "wheat": {"reactivity": 5, "risk_level": "very_low", "population_percentile": 8},
+        "shellfish": {"reactivity": 45, "risk_level": "moderate", "population_percentile": 62},
+        "soy": {"reactivity": 12, "risk_level": "very_low", "population_percentile": 18},
+        "tree_nuts": {"reactivity": 15, "risk_level": "low", "population_percentile": 22}
+    }',
+    '{
+        "pollen": {"reactivity": 72, "risk_level": "high", "population_percentile": 85, "seasonal_pattern": true},
+        "dust_mites": {"reactivity": 38, "risk_level": "moderate", "population_percentile": 52},
+        "pet_dander": {"reactivity": 28, "risk_level": "low", "population_percentile": 40},
+        "mold": {"reactivity": 18, "risk_level": "low", "population_percentile": 25}
+    }'
+);
+
+-- Sarah's neuroprotective markers
+INSERT INTO neuroprotective_markers (user_id, test_id, markers, overall_protection_score)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    '{
+        "beta_amyloid": {"antibody_level": 450, "z_score": 1.2, "population_percentile": 85, "status": "protective", "protective_threshold": 300},
+        "tau": {"antibody_level": 380, "z_score": 0.9, "population_percentile": 78, "status": "protective", "protective_threshold": 250},
+        "alpha_synuclein": {"antibody_level": 220, "z_score": 0.3, "population_percentile": 55, "status": "moderate", "protective_threshold": 300},
+        "TDP_43": {"antibody_level": 410, "z_score": 1.1, "population_percentile": 82, "status": "protective", "protective_threshold": 280},
+        "HERV_K_Env": {"antibody_level": 180, "z_score": -0.2, "population_percentile": 42, "status": "moderate", "protective_threshold": 250},
+        "heat_shock_proteins": {"antibody_level": 520, "z_score": 1.5, "population_percentile": 88, "status": "protective", "protective_threshold": 350}
+    }',
+--- PAGE 21 ---
+    73.00
+);
+
+-- Sarah's immunity passport
+INSERT INTO immunity_passports (user_id, expiry_date, status, vaccine_summary, immunity_summary, verified_by)
+VALUES (
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    '2027-03-15',
+    'active',
+    '{"total_vaccines": 6, "up_to_date": 5, "needs_booster": 1, "protection_percentage": 75}',
+    '{"overall_risk": "moderate", "vaccine_score": 75, "autoimmune_risk": 12, "neuro_protection": 73}',
+    'Dr. Emily Chen, MD - ASU Clinical Immunology'
+);
+
+-- Sarah's antibody trends (6-month history)
+INSERT INTO antibody_trends (user_id, marker_name, marker_category, measurement_date, value, z_score, percentile, unit) VALUES
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'COVID-19 IgG', 'vaccine', '2025-10-01', 620.00, 1.8, 82.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'COVID-19 IgG', 'vaccine', '2025-12-01', 580.00, 1.5, 78.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'COVID-19 IgG', 'vaccine', '2026-02-01', 550.00, 1.3, 75.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Influenza IgG', 'vaccine', '2025-10-01', 340.00, 1.0, 68.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Influenza IgG', 'vaccine', '2025-12-01', 310.00, 0.8, 64.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'Influenza IgG', 'vaccine', '2026-02-01', 280.00, 0.6, 60.00, 'AU/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'beta_amyloid', 'neuroprotective', '2025-10-01', 420.00, 1.0, 80.00, 'ng/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'beta_amyloid', 'neuroprotective', '2025-12-01', 435.00, 1.1, 82.00, 'ng/mL'),
+('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'beta_amyloid', 'neuroprotective', '2026-02-01', 450.00, 1.2, 85.00, 'ng/mL');
+
+
+-- =============================================================================
+-- Patient 2: Michael Chen - HIGH RISK (Poly-GA 41.95 z-score), 66% protection
+-- =============================================================================
+INSERT INTO users (user_id, email, first_name, last_name, date_of_birth, nationality, profile_complete, consent_hipaa, consent_research)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'michael.chen@demo.immunit.com',
+    'Michael', 'Chen',
+    '1972-08-22', 'United States',
+    TRUE, TRUE, TRUE
+) ON CONFLICT (user_id) DO NOTHING;
+
+-- Michael's test result
+INSERT INTO test_results (test_id, user_id, sample_id, test_date, processing_status, peptide_count, quality_score)
+VALUES (
+    'd4e5f6a7-b8c9-0123-defa-456789012345',
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'SAMPLE-2026-002',
+    '2026-03-15',
+    'completed',
+    118750,
+    0.9500
+) ON CONFLICT (test_id) DO NOTHING;
+--- PAGE 22 ---
+
+-- Michael's vaccine records
+INSERT INTO vaccine_records (user_id, vaccine_name, vaccine_type, manufacturer, admin_date, next_due_date, dose_number, protection_status, efficacy_percentile) VALUES
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'COVID-19 (Moderna)', 'mRNA', 'Moderna', '2025-06-20', '2026-06-20', 4, 'waning', 55.00),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Influenza', 'Inactivated', 'Sanofi Pasteur', '2025-09-15', '2026-09-15', 1, 'protected', 62.00),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Tetanus/Diphtheria', 'Toxoid', 'Sanofi Pasteur', '2018-02-10', '2028-02-10', 3, 'protected', 78.00),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Hepatitis B', 'Recombinant', 'GSK', '2019-11-05', '2029-11-05', 3, 'waning', 48.00),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Hepatitis A', 'Inactivated', 'Merck', '2021-07-22', '2026-07-22', 2, 'not_protected', 32.00),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Yellow Fever', 'Live attenuated', 'Sanofi Pasteur', '2023-01-10', '2033-01-10', 1, 'protected', 88.00);
+
+-- Michael's immunity metrics (HIGH RISK due to neuroprotective markers)
+INSERT INTO immunity_metrics (user_id, test_id, metric_type, vaccine_data, overall_score, risk_level)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'd4e5f6a7-b8c9-0123-defa-456789012345',
+    'vaccine_protection',
+    '{
+        "COVID-19": {"protection_level": 55, "status": "waning", "antibody_titer": 180, "population_percentile": 35, "trend": "declining"},
+        "Influenza": {"protection_level": 62, "status": "protected", "antibody_titer": 250, "population_percentile": 55, "trend": "stable"},
+        "Tetanus": {"protection_level": 78, "status": "protected", "antibody_titer": 380, "population_percentile": 68, "trend": "declining"},
+        "Hepatitis_B": {"protection_level": 48, "status": "waning", "antibody_titer": 130, "population_percentile": 32, "trend": "declining"},
+        "Hepatitis_A": {"protection_level": 32, "status": "not_protected", "antibody_titer": 75, "population_percentile": 15, "trend": "declining"},
+        "Yellow_Fever": {"protection_level": 88, "status": "protected", "antibody_titer": 520, "population_percentile": 82, "trend": "stable"}
+    }',
+    66.00,
+    'high'
+);
+
+-- Michael's autoimmune markers (elevated thyroid markers)
+INSERT INTO autoimmune_markers (user_id, test_id, markers, overall_risk_score, flagged_markers)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'd4e5f6a7-b8c9-0123-defa-456789012345',
+    '{
+        "TPO": {"reactivity_level": 68.2, "z_score": 3.8, "population_percentile": 96, "risk_status": "high", "associated_conditions": ["Hashimoto thyroiditis", "Graves disease"]},
+        "ANA": {"reactivity_level": 42.5, "z_score": 2.1, "population_percentile": 78, "risk_status": "elevated", "associated_conditions": ["Lupus", "Scleroderma"]},
+        "RF": {"reactivity_level": 35.8, "z_score": 1.8, "population_percentile": 72, "risk_status": "elevated", "associated_conditions": ["Rheumatoid arthritis"]},
+        "Anti-CCP": {"reactivity_level": 12.4, "z_score": 0.6, "population_percentile": 22, "risk_status": "low", "associated_conditions": ["Rheumatoid arthritis"]},
+        "Anti-dsDNA": {"reactivity_level": 28.9, "z_score": 1.5, "population_percentile": 55, "risk_status": "low", "associated_conditions": ["Systemic lupus erythematosus"]},
+        "GAD65": {"reactivity_level": 52.1, "z_score": 2.8, "population_percentile": 88, "risk_status": "elevated", "associated_conditions": ["Type 1 diabetes"]}
+    }',
+    35.00,
+    '{"TPO"}'
+);
+
+-- Michael's allergen data
+INSERT INTO allergen_data (user_id, test_id, food_allergens, environmental_allergens)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'd4e5f6a7-b8c9-0123-defa-456789012345',
+--- PAGE 23 ---
+    '{
+        "peanut": {"reactivity": 65, "risk_level": "moderate", "population_percentile": 78},
+        "milk": {"reactivity": 12, "risk_level": "very_low", "population_percentile": 15},
+        "wheat": {"reactivity": 35, "risk_level": "low", "population_percentile": 48},
+        "shellfish": {"reactivity": 82, "risk_level": "high", "population_percentile": 92},
+        "soy": {"reactivity": 8, "risk_level": "very_low", "population_percentile": 10},
+        "egg": {"reactivity": 28, "risk_level": "low", "population_percentile": 38}
+    }',
+    '{
+        "pollen": {"reactivity": 55, "risk_level": "moderate", "population_percentile": 68, "seasonal_pattern": true},
+        "dust_mites": {"reactivity": 62, "risk_level": "moderate", "population_percentile": 75},
+        "pet_dander": {"reactivity": 78, "risk_level": "high", "population_percentile": 88},
+        "mold": {"reactivity": 42, "risk_level": "moderate", "population_percentile": 58}
+    }'
+);
+
+-- Michael's neuroprotective markers (CRITICAL: Poly-GA z-score 41.95)
+INSERT INTO neuroprotective_markers (user_id, test_id, markers, overall_protection_score)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    'd4e5f6a7-b8c9-0123-defa-456789012345',
+    '{
+        "beta_amyloid": {"antibody_level": 180, "z_score": -0.8, "population_percentile": 25, "status": "low", "protective_threshold": 300},
+        "tau": {"antibody_level": 150, "z_score": -1.2, "population_percentile": 18, "status": "low", "protective_threshold": 250},
+        "alpha_synuclein": {"antibody_level": 280, "z_score": 0.1, "population_percentile": 48, "status": "moderate", "protective_threshold": 300},
+        "TDP_43": {"antibody_level": 120, "z_score": -1.8, "population_percentile": 12, "status": "low", "protective_threshold": 280},
+        "Poly_GA": {"antibody_level": 1850, "z_score": 41.95, "population_percentile": 99.99, "status": "critical_elevation", "protective_threshold": 200, "clinical_note": "Extreme elevation - associated with C9orf72 ALS/FTD. Requires urgent neurological referral."},
+        "HERV_K_Env": {"antibody_level": 420, "z_score": 2.8, "population_percentile": 92, "status": "elevated", "protective_threshold": 250},
+        "heat_shock_proteins": {"antibody_level": 290, "z_score": -0.3, "population_percentile": 38, "status": "low", "protective_threshold": 350}
+    }',
+    32.00
+);
+
+-- Michael's immunity passport
+INSERT INTO immunity_passports (user_id, expiry_date, status, vaccine_summary, immunity_summary, verified_by)
+VALUES (
+    'c3d4e5f6-a7b8-9012-cdef-345678901234',
+    '2027-03-15',
+    'active',
+    '{"total_vaccines": 6, "up_to_date": 3, "needs_booster": 3, "protection_percentage": 66}',
+    '{"overall_risk": "high", "vaccine_score": 66, "autoimmune_risk": 35, "neuro_protection": 32, "critical_flags": ["Poly-GA z-score 41.95 - urgent neurological referral recommended"]}',
+    'Dr. Emily Chen, MD - ASU Clinical Immunology'
+);
+
+-- Michael's antibody trends (6-month history showing decline)
+INSERT INTO antibody_trends (user_id, marker_name, marker_category, measurement_date, value, z_score, percentile, unit) VALUES
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'COVID-19 IgG', 'vaccine', '2025-10-01', 320.00, 0.8, 55.00, 'AU/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'COVID-19 IgG', 'vaccine', '2025-12-01', 250.00, 0.4, 45.00, 'AU/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'COVID-19 IgG', 'vaccine', '2026-02-01', 180.00, -0.1, 35.00, 'AU/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Poly_GA', 'neuroprotective', '2025-10-01', 980.00, 22.50, 99.90, 'ng/mL'),
+--- PAGE 24 ---
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Poly_GA', 'neuroprotective', '2025-12-01', 1420.00, 32.10, 99.95, 'ng/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'Poly_GA', 'neuroprotective', '2026-02-01', 1850.00, 41.95, 99.99, 'ng/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'beta_amyloid', 'neuroprotective', '2025-10-01', 240.00, 0.0, 40.00, 'ng/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'beta_amyloid', 'neuroprotective', '2025-12-01', 210.00, -0.4, 32.00, 'ng/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'beta_amyloid', 'neuroprotective', '2026-02-01', 180.00, -0.8, 25.00, 'ng/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'TPO', 'autoimmune', '2025-10-01', 45.00, 2.5, 88.00, 'IU/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'TPO', 'autoimmune', '2025-12-01', 55.00, 3.2, 92.00, 'IU/mL'),
+('c3d4e5f6-a7b8-9012-cdef-345678901234', 'TPO', 'autoimmune', '2026-02-01', 68.20, 3.8, 96.00, 'IU/mL');
+
+================================================================================
+FILE: immunit/services/config.ts
+PAGE 24 of SOURCE CODE
+================================================================================
+// ImmuniT API & Auth Configuration
+// Connects to the deployed AWS backend
+
+export const CONFIG = {
+  // API Gateway endpoint
+  API_BASE_URL: 'https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod',
+
+  // Cognito configuration
+  COGNITO_REGION: 'us-west-2',
+  COGNITO_USER_POOL_ID: 'us-west-2_Tg7giNyV6',
+  COGNITO_CLIENT_ID: '3bbrorsbrhi30b98nstb64mqeg',
+} as const;
+
+================================================================================
+FILE: immunit/services/authService.ts
+PAGE 24 of SOURCE CODE
+================================================================================
+// ImmuniT Auth Service
+// Handles Cognito authentication for mobile app
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CONFIG } from './config';
+
+const TOKEN_KEY = 'immunit_id_token';
+const USER_KEY = 'immunit_user';
+
+interface AuthTokens {
+  IdToken: string;
+  AccessToken: string;
+  RefreshToken: string;
+}
+
+interface CognitoAuthResult {
+  AuthenticationResult: AuthTokens;
+}
+
+interface UserInfo {
+  email: string;
+--- PAGE 25 ---
+  name: string;
+  sub: string;
+}
+
+// Use Cognito USER_SRP_AUTH via the public API (no SDK dependency)
+async function cognitoRequest(action: string, payload: Record<string, any>) {
+  const response = await fetch(
+    `https://cognito-idp.${CONFIG.COGNITO_REGION}.amazonaws.com/`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-amz-json-1.1',
+        'X-Amz-Target': `AWSCognitoIdentityProviderService.${action}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    const errorMessage = data.message || data.__type || 'Authentication failed';
+    throw new Error(errorMessage);
+  }
+  return data;
+}
+
+export const authService = {
+  /**
+   * Sign in with email and password.
+   * Uses InitiateAuth with USER_PASSWORD_AUTH flow.
+   */
+  login: async (email: string, password: string): Promise<UserInfo> => {
+    const result: CognitoAuthResult = await cognitoRequest('InitiateAuth', {
+      AuthFlow: 'USER_PASSWORD_AUTH',
+      ClientId: CONFIG.COGNITO_CLIENT_ID,
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+      },
+    });
+
+    const idToken = result.AuthenticationResult.IdToken;
+    await AsyncStorage.setItem(TOKEN_KEY, idToken);
+
+    // Decode the JWT payload to extract user info
+    const payload = JSON.parse(atob(idToken.split('.')[1]));
+    const user: UserInfo = {
+      email: payload.email || email,
+      name: payload.name || payload.email || email,
+      sub: payload.sub,
