@@ -1,368 +1,143 @@
-Project ImmuniT - Development Timeline & Sprint Plan
-Executive Summary
-Project Duration: 16 weeks (4 months) Target Launch: Q2 2026 (June 2026) Team Structure:
-* 1 Lead Developer (Aiden Bingham)
-* Backend Developer (Jon Gallagher)
+# Project ImmuniT
 
-Phase 1: Foundation & Backend Setup (Weeks 1-4)
-Sprint 1: Infrastructure & Database Setup (Week 1-2)
-Week 1: AWS Infrastructure
-* [ ] Day 1-2: Set up AWS Organizations structure
-    * Create separate accounts (Infrastructure, Data, Security, Audit)
-    * Configure IAM Identity Center for SSO
-    * Set up billing alerts
-* [ ] Day 3-4: Create DynamoDB tables
-    * Run table creation scripts
-    * Configure auto-scaling policies
-    * Set up CloudWatch monitoring
-* [ ] Day 5: S3 Setup
-    * Create bucket for raw PepSeq data
-    * Configure encryption (AES-256)
-    * Set up lifecycle policies
-    * Create IAM policies for Lambda access
-Deliverables:
-* ✓ All 7 DynamoDB tables created
-* ✓ S3 bucket configured
-* ✓ IAM roles and policies documented
-* ✓ Infrastructure diagram updated
-Week 2: Lambda Functions & API Gateway
-* [ ] Day 1-2: Deploy Lambda functions
-    * User Management Lambda
-    * Immunity Data Lambda
-    * Vaccine Tracking Lambda
-* [ ] Day 3-4: Configure API Gateway
-    * Create REST API
-    * Set up endpoints (20+ endpoints)
-    * Configure CORS
-    * Add API keys for mobile app
-* [ ] Day 5: Testing & Documentation
-    * Postman collection for all endpoints
-    * API documentation (Swagger/OpenAPI)
-    * End-to-end testing
-Deliverables:
-* ✓ 3 Lambda functions deployed
-* ✓ API Gateway configured
-* ✓ Postman collection ready
-* ✓ API documentation complete
+Immunity passport platform powered by PepSeq peptide microarray technology. Provides personalized immune profiling including vaccine protection tracking, autoimmune risk assessment, allergen reactivity mapping, and neuroprotective antibody monitoring.
 
-Sprint 2: Authentication & Security (Week 3-4)
-Week 3: AWS Cognito Setup
-* [ ] Day 1-2: User Pool Configuration
-    * Create Cognito User Pool
-    * Configure password policies
-    * Set up MFA (optional)
-    * Create app client for mobile
-* [ ] Day 3-4: Authentication Flow
-    * Implement sign-up Lambda trigger
-    * Configure email verification
-    * Set up custom attributes (HIPAA consent)
-    * Test authentication flow
-* [ ] Day 5: Integration Testing
-    * Test user registration
-    * Test login flow
-    * Test token refresh
-    * Document auth flow
-Week 4: Security & Compliance
-* [ ] Day 1-2: Encryption Setup
-    * Configure encryption at rest (DynamoDB)
-    * Set up KMS keys
-    * Implement encryption in transit (TLS)
-* [ ] Day 3-4: HIPAA Compliance
-    * Sign AWS BAA (Business Associate Agreement)
-    * Enable CloudTrail logging
-    * Set up VPC Flow Logs
-    * Configure audit logging
-* [ ] Day 5: Security Testing
-    * Penetration testing (basic)
-    * Vulnerability scan
-    * Document security measures
-Deliverables:
-* ✓ Cognito User Pool operational
-* ✓ Authentication working end-to-end
-* ✓ HIPAA compliance documented
-* ✓ Security audit complete
+## Architecture
 
-Phase 2: Mobile App Development (Weeks 5-10)
-Sprint 3: Core UI & Navigation (Week 5-6)
-Week 5: Project Setup & Basic UI
-* [ ] Day 1-2: React Native Setup
-    * Initialize project (Expo or bare React Native)
-    * Install dependencies (navigation, state management)
-    * Configure TypeScript
-    * Set up folder structure
-* [ ] Day 3-4: Navigation Structure
-    * Implement tab navigation
-    * Create screen placeholders
-    * Set up navigation flow
-* [ ] Day 5: Design System
-    * Implement color palette (from designs)
-    * Create reusable components
-    * Typography system
-Week 6: Authentication Screens
-* [ ] Day 1-2: Login/Signup UI
-    * Create login screen
-    * Create signup screen
-    * Implement form validation
-* [ ] Day 3-4: Cognito Integration
-    * Connect to AWS Cognito
-    * Implement login logic
-    * Implement signup logic
-    * Store auth tokens securely
-* [ ] Day 5: Testing
-    * Test authentication flow
-    * Handle error states
-    * Add loading indicators
-Deliverables:
-* ✓ App navigation working
-* ✓ Authentication screens complete
-* ✓ User can sign up and log in
-* ✓ Design system implemented
+```
+┌──────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│  Mobile App  │────▶│  API Gateway    │────▶│  Lambda Handler  │
+│ (React Native)│    │  (REST + CORS)  │     │  (Python 3.12)   │
+└──────────────┘     └─────────────────┘     └────────┬─────────┘
+                                                      │
+                     ┌─────────────────┐              │
+                     │  Cognito        │◀─────────────┤
+                     │  (Auth/JWT)     │              │
+                     └─────────────────┘              │
+                                                      ▼
+                                             ┌──────────────────┐
+                                             │  PostgreSQL (RDS) │
+                                             │  9 tables         │
+                                             └──────────────────┘
+```
 
-Sprint 4: Dashboard & Data Display (Week 7-8)
-Week 7: Dashboard Implementation
-* [ ] Day 1-2: Dashboard Layout
-    * Create dashboard screen
-    * Implement protection summary card
-    * Add trend indicators
-* [ ] Day 3-4: API Integration
-    * Create API service layer
-    * Fetch user immunity data
-    * Implement loading states
-    * Error handling
-* [ ] Day 5: Charts & Visualizations
-    * Implement protection level charts
-    * Add trend graphs
-    * Population comparison view
-Week 8: Vaccine Tracker
-* [ ] Day 1-2: Vaccine List UI
-    * Create vaccine list component
-    * Display vaccine records
-    * Show protection status
-* [ ] Day 3-4: Vaccine Details
-    * Detail screen for each vaccine
-    * Show antibody trends
-    * Display next booster date
-* [ ] Day 5: Add Vaccine Feature
-    * Form to add new vaccine record
-    * Date picker integration
-    * Save to backend
-Deliverables:
-* ✓ Dashboard showing immunity summary
-* ✓ Vaccine tracker functional
-* ✓ Charts and visualizations working
-* ✓ API integration complete
+**AWS Resources:**
+- **API Gateway:** `ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod`
+- **Lambda:** `immunity-passport-api`
+- **RDS:** `immunit-devt.c1ie608407to.us-west-2.rds.amazonaws.com`
+- **Cognito User Pool:** `us-west-2_Tg7giNyV6`
 
-Sprint 5: Advanced Features (Week 9-10)
-Week 9: Autoimmune & Allergen Modules
-* [ ] Day 1-2: Autoimmune Radar
-    * Implement radar chart
-    * Display autoimmune markers
-    * Show risk levels
-* [ ] Day 3-4: Allergen Explorer
-    * Create allergen list
-    * Separate food vs environmental
-    * Show reactivity levels
-* [ ] Day 5: Neuroprotective Dashboard
-    * Display cognitive protection score
-    * Show individual markers
-    * Population comparisons
-Week 10: Immunity Passport
-* [ ] Day 1-2: Passport UI
-    * Design passport layout
-    * Display user information
-    * Show vaccination status
-* [ ] Day 3-4: PDF Generation
-    * Implement PDF export
-    * Add QR code for verification
-    * Include all relevant data
-* [ ] Day 5: Share Functionality
-    * Share via email
-    * Save to device
-    * Print functionality
-Deliverables:
-* ✓ Autoimmune radar working
-* ✓ Allergen explorer complete
-* ✓ Neuroprotective dashboard functional
-* ✓ Immunity passport with PDF export
+## API Endpoints
 
-Phase 3: Testing & Refinement (Weeks 11-13)
-Sprint 6: Testing & Bug Fixes (Week 11-12)
-Week 11: Internal Testing
-* [ ] Day 1-2: Unit Testing
-    * Write unit tests for components
-    * Test API service layer
-    * Lambda function testing
-* [ ] Day 3-4: Integration Testing
-    * End-to-end flow testing
-    * Cross-platform testing (iOS/Android)
-    * Performance testing
-* [ ] Day 5: Bug Tracking
-    * Set up bug tracking system
-    * Prioritize issues
-    * Assign bug fixes
-Week 12: TestFlight Beta
-* [ ] Day 1-2: TestFlight Setup
-    * Configure App Store Connect
-    * Upload beta build
-    * Invite internal testers (5-10 people)
-* [ ] Day 3-4: Beta Testing
-    * Monitor crash reports
-    * Collect feedback
-    * Analyze usage patterns
-* [ ] Day 5: Iteration
-    * Address critical bugs
-    * Implement high-priority feedback
-    * Update documentation
-Week 13: Polish & Optimization
-* [ ] Day 1-2: UI/UX Refinement
-    * Improve animations
-    * Optimize loading times
-    * Fix visual inconsistencies
-* [ ] Day 3-4: Performance Optimization
-    * Reduce API calls
-    * Implement caching
-    * Optimize images
-* [ ] Day 5: Accessibility
-    * Add accessibility labels
-    * Test with screen readers
-    * Improve color contrast
-Deliverables:
-* ✓ All critical bugs fixed
-* ✓ Beta testing complete
-* ✓ Performance optimized
-* ✓ UI polished and refined
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | API health check + DB connectivity |
+| GET | `/dashboard/summary` | Main dashboard overview with risk flags |
+| GET | `/vaccinations` | All vaccine records for user |
+| GET | `/vaccines/recommendations` | Booster recommendations by urgency |
+| GET | `/vaccines/trends` | Vaccine antibody trend data |
+| GET | `/immunity-metrics` | Full immunity score breakdown |
+| GET | `/autoimmune-markers` | Autoimmune antibody data with risk levels |
+| GET | `/allergens` | Food and environmental allergen reactivity |
+| GET | `/neuroprotective-markers` | Cognitive protection scores |
+| GET | `/antibody-trends` | All antibody time-series data |
+| GET | `/immunity-passports` | Immunity passport records |
+| GET | `/risk-score` | Composite risk assessment |
+| POST | `/test-results` | Ingest new PepSeq test data |
+| POST | `/vaccinations` | Add a vaccine record |
 
-Phase 4: Launch Preparation (Weeks 14-16)
-Sprint 7: App Store Submission (Week 14-15)
-Week 14: App Store Assets
-* [ ] Day 1-2: Screenshots
-    * Create screenshots for all device sizes
-    * 6.7", 6.5", 5.5" iPhone displays
-    * iPad screenshots (optional)
-* [ ] Day 3-4: App Store Listing
-    * Write app description
-    * Create promotional text
-    * Add keywords for ASO
-    * Upload app icon
-* [ ] Day 5: Compliance Documents
-    * Privacy policy
-    * Terms of service
-    * HIPAA compliance statement
-    * Data handling documentation
-Week 15: Submission & Review
-* [ ] Day 1-2: Final Build
-    * Create production build
-    * Test on physical devices
-    * Verify all features working
-* [ ] Day 3: Submit to App Store
-    * Upload via Xcode or Transporter
-    * Complete App Review questionnaire
-    * Submit for review
-* [ ] Day 4-5: Monitoring
-    * Watch for App Review feedback
-    * Respond to questions quickly
-    * Address any rejection reasons
+All GET endpoints accept `user_id` via Cognito JWT claims or query parameter.
 
-Sprint 8: Launch & Monitoring (Week 16)
-Week 16: Soft Launch
-* [ ] Day 1-2: Clinical QR Codes
-    * Generate QR codes for study participants
-    * Create printable cards
-    * Distribute to clinical partners
-* [ ] Day 3-4: Marketing Collateral
-    * Create email newsletter
-    * LinkedIn announcement posts
-    * Education
-Week	Milestone	Status
-2	Backend infrastructure complete	🟡 In Progress
-4	Authentication & security operational	⬜ Not Started
-6	Core mobile screens working	⬜ Not Started
-8	Vaccine tracker functional	⬜ Not Started
-10	All features implemented	⬜ Not Started
-12	Beta testing complete	⬜ Not Started
-14	App Store submission ready	⬜ Not Started
-16	App Launch	⬜ Not Started
-    * al content
-* [ ] Day 5: Launch Day
-    * App goes live on App Store
-    * Monitor for crashes
-    * Track initial user feedback
-Post-Launch Activities:
-* Monitor CloudWatch metrics
-* Track user engagement
-* Respond to App Store reviews
-* Plan next feature releases
-Deliverables:
-* ✓ App live on App Store
-* ✓ Marketing materials distributed
-* ✓ QR codes ready for clinical use
-* ✓ Monitoring dashboard operational
+## Database Schema
 
-Key Milestones
+9 PostgreSQL tables in `database/schema.sql`:
 
-Risk Management
-High-Risk Items
-1. App Review Rejection (Health apps scrutinized heavily)
-    * Mitigation: Ensure full HIPAA compliance, clear privacy policy
-2. PepSeq Data Pipeline (Complex data processing)
-    * Mitigation: Start with simplified algorithm, iterate
-3. Performance Issues (100K+ peptides = large datasets)
-    * Mitigation: Implement pagination, caching, lazy loading
-Medium-Risk Items
-1. Clinical Validation (Algorithm accuracy)
-    * Mitigation: Work with immunology advisors
-2. User Adoption (New platform)
-    * Mitigation: Focus on clinical study participants first
+1. **users** - Core profiles with Cognito integration
+2. **test_results** - PepSeq test metadata
+3. **vaccine_records** - Vaccination history
+4. **immunity_metrics** - Calculated immunity scores (JSONB)
+5. **autoimmune_markers** - Autoimmune antibody data (JSONB)
+6. **allergen_data** - Food and environmental allergens (JSONB)
+7. **neuroprotective_markers** - Cognitive protection markers (JSONB)
+8. **immunity_passports** - Verifiable immunity passports
+9. **antibody_trends** - Time-series antibody tracking
 
-Resource Allocation
-Week-by-Week Focus
-Weeks	Lead Dev (You)	Backend Dev	Mobile Dev	DevOps
-1-2	Infrastructure	Lambda functions	-	AWS setup
-3-4	Security	API Gateway	-	Cognito
-5-6	Backend support	API refinement	Core UI	Monitoring
-7-8	Feature dev	Data processing	Dashboard	Optimization
-9-10	Integration	Advanced features	UI features	Performance
-11-12	Testing	Bug fixes	Bug fixes	Testing
-13	Polish	Optimization	Polish	Monitoring
-14-15	App Store prep	Stability	Screenshots	Deployment
-16	Launch	Launch support	Launch	Launch
-Success Metrics
-Technical Metrics
-* API response time < 500ms
-* App crash rate < 0.1%
-* 99.9% backend uptime
-User Metrics
-* 50+ beta testers
-* 100+ downloads in first month
-* 4+ stars on App Store
-Business Metrics
-* 10+ clinical study partnerships
-* HIPAA compliance certified
-* Ready for Series A conversations
+## Quick Start
 
-Next Immediate Actions (This Week)
-Priority 1 (Must Do)
-1. Run DynamoDB table creation script
-2. Deploy 3 Lambda functions to AWS
-3. Test Lambda functions with Postman
-4. Set up Cognito User Pool
-Priority 2 (Should Do)
-1. Create API Gateway configuration
-2. Write API documentation
-3. Set up monitoring dashboards
-4. Begin mobile app project initialization
-Priority 3 (Nice to Have)
-1. Create project management board (Jira/Trello)
-2. Set up CI/CD pipeline
-3. Document architecture decisions
-4. Create team communication channels
+### 1. Set up the database
 
-Contact & Escalation
-Technical Issues:
-* Backend: Jon Gallagher
-* Mobile: Aiden Bingham
-* Infrastructure: Aiden Bingham
-Project Management:
-* Lead: Aiden Bingham
+```bash
+# Set your DB password
+export PGPASSWORD=your_password_here
 
+# Create tables and load demo data
+./deploy/setup_database.sh
+```
 
+### 2. Deploy Lambda
+
+```bash
+# Deploy enhanced handler to AWS
+./deploy/deploy.sh
+```
+
+### 3. Test the API
+
+```bash
+# Health check
+curl https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod/health
+
+# Dashboard for demo patient (Sarah Johnson)
+curl "https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod/dashboard/summary?user_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+# High-risk patient (Michael Chen)
+curl "https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod/risk-score?user_id=c3d4e5f6-a7b8-9012-cdef-345678901234"
+```
+
+## Demo Patients
+
+| Patient | Risk Level | Vaccine Protection | Key Finding |
+|---------|------------|-------------------|-------------|
+| Sarah Johnson | Moderate | 75% | Stable immune profile, seasonal pollen allergy |
+| Michael Chen | **HIGH** | 66% | Poly-GA z-score **41.95** (C9orf72 ALS/FTD indicator) |
+
+Michael Chen's extreme Poly-GA elevation demonstrates ImmuniT's ability to detect neurodegenerative biomarkers that traditional healthcare misses.
+
+## Project Structure
+
+```
+Project-ImmuniT/
+├── AWS Lambda creation/    # Original DynamoDB-based Lambda functions
+│   ├── immunity_data.py
+│   ├── user_management.py
+│   ├── vaccine_tracking.py
+│   ├── dynamodb_schemas.json
+│   └── create_tables.sh
+├── database/               # PostgreSQL schema and seed data
+│   ├── schema.sql
+│   └── seed_demo_patients.sql
+├── lambda/                 # Enhanced RDS-backed Lambda handler
+│   ├── lambda_handler.py
+│   └── requirements.txt
+└── deploy/                 # Deployment automation
+    ├── deploy.sh
+    └── setup_database.sh
+```
+
+## Development Timeline
+
+| Phase | Weeks | Status |
+|-------|-------|--------|
+| Foundation & Backend | 1-4 | **Complete** |
+| Mobile App Development | 5-10 | Next |
+| Testing & Refinement | 11-13 | Planned |
+| Launch Preparation | 14-16 | Planned |
+
+**Team:** Aiden Bingham (Lead), Jon Gallagher (Backend)
+
+## Tech Stack
+
+- **Backend:** Python 3.12, AWS Lambda, API Gateway, PostgreSQL (RDS)
+- **Auth:** AWS Cognito (JWT)
+- **Mobile:** React Native (planned)
+- **Data:** PepSeq peptide microarray analysis
