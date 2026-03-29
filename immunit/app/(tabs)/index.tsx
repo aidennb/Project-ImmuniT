@@ -2,8 +2,9 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -12,6 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { apiService, type DashboardSummary, type VaccineRecord } from '../../services/apiService';
 
 const StatusBadge = ({
   status,
@@ -81,6 +84,53 @@ const FeatureCard = ({
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
+  const [vaccines, setVaccines] = useState<VaccineRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.sub) {
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        const [dashData, vaxData] = await Promise.all([
+          apiService.getDashboard(user.sub),
+          apiService.getVaccinations(user.sub),
+        ]);
+        setDashboard(dashData);
+        setVaccines(vaxData.vaccinations || []);
+      } catch (e) {
+        // Fall back to showing the UI without data
+        console.log('API fetch error (using fallback UI):', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
+
+  const displayName = dashboard?.user
+    ? `${dashboard.user.first_name} ${dashboard.user.last_name}`
+    : user?.name || 'User';
+
+  const protectedCount = dashboard?.vaccine_summary?.protected ?? 0;
+  const totalVaccines = dashboard?.vaccine_summary?.total ?? 0;
+  const waningCount = dashboard?.vaccine_summary?.waning ?? 0;
+
+  // Build vaccine status items from real data or fallback
+  const vaccineItems = vaccines.length > 0
+    ? vaccines.slice(0, 3).map(v => ({
+        name: v.vaccine_name.replace(/\s*\(.*\)/, ''),
+        status: v.protection_status === 'protected' ? 'Protected'
+          : v.protection_status === 'waning' ? 'Monitor' : 'Unprotected',
+        type: (v.protection_status === 'protected' ? 'success' : 'warning') as 'success' | 'warning',
+      }))
+    : [
+        { name: 'COVID-19', status: 'Protected', type: 'success' as const },
+        { name: 'Tetanus', status: 'Monitor', type: 'warning' as const },
+      ];
 
   return (
     <LinearGradient
@@ -95,7 +145,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.welcomeText}>Welcome</Text>
-            <Text style={styles.userName}>Ajay Verma</Text>
+            <Text style={styles.userName}>{displayName}</Text>
           </View>
           {/* <TouchableOpacity style={styles.infoButton}>
             <Feather name="info" size={24} color="#0080FF" />
@@ -131,28 +181,32 @@ export default function HomeScreen() {
                 Current Vaccination Status
               </Text>
 
-              <View style={styles.vaccinationStatus}>
-                <View style={styles.vaccinationItem}>
-                  <View>
-                    <Text style={styles.vaccineName}>COVID-19</Text>
-                    <Text style={styles.vaccineType}>Vaccination</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color="#0080FF" style={{ marginVertical: 20 }} />
+              ) : (
+                <>
+                  <View style={styles.vaccinationStatus}>
+                    {vaccineItems.map((item, idx) => (
+                      <View key={idx} style={styles.vaccinationItem}>
+                        <View>
+                          <Text style={styles.vaccineName}>{item.name}</Text>
+                          <Text style={styles.vaccineType}>Vaccination</Text>
+                        </View>
+                        <StatusBadge status={item.status} type={item.type} />
+                      </View>
+                    ))}
                   </View>
-                  <StatusBadge status="Protected" type="success" />
-                </View>
 
-                <View style={styles.vaccinationItem}>
-                  <View>
-                    <Text style={styles.vaccineName}>Tetanus</Text>
-                    <Text style={styles.vaccineType}>Vaccination</Text>
+                  <View style={styles.overallStatus}>
+                    <Text style={styles.overallLabel}>Overall Status</Text>
+                    <Text style={styles.overallValue}>
+                      {totalVaccines > 0
+                        ? `${protectedCount} of ${totalVaccines} up to date${waningCount > 0 ? ` (${waningCount} waning)` : ''}`
+                        : `${vaccineItems.length} of ${vaccineItems.length} up to date`}
+                    </Text>
                   </View>
-                  <StatusBadge status="Monitor" type="warning" />
-                </View>
-              </View>
-
-              <View style={styles.overallStatus}>
-                <Text style={styles.overallLabel}>Overall Status</Text>
-                <Text style={styles.overallValue}>2 of 2 up to date</Text>
-              </View>
+                </>
+              )}
             </View>
 
             <View style={styles.featuresSection}>

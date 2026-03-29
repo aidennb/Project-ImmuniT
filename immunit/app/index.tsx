@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +17,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -31,9 +36,20 @@ export default function LoginScreen() {
   if (!fontsLoaded) {
     return null;
   }
-  const handleSignIn = () => {
-    // Navigate to the main app
-    router.replace('/(tabs)');
+  const handleSignIn = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter your email and password.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await login(username, password);
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Sign In Failed', error.message || 'Invalid credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,8 +121,12 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-                <Text style={styles.signInText}>Sign In</Text>
+              <TouchableOpacity style={[styles.signInButton, loading && { opacity: 0.7 }]} onPress={handleSignIn} disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.signInText}>Sign In</Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.resetLink}>

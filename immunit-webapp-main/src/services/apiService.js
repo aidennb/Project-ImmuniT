@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://your-api-gateway-url';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod';
 
 const getAuthHeaders = async () => {
   const idToken = await authService.getIdToken();
@@ -58,11 +58,11 @@ export const apiService = {
   deleteAntibodyTrend: async (id) => apiService.delete('/antibody-trends', id),
 
   // Autoimmune Markers
-  getAutoimmueMarkers: async () => apiService.getAll('/autoimmune-markers'),
-  getAutoimmueMarker: async (id) => apiService.getById('/autoimmune-markers', id),
-  createAutoimmueMarker: async (data) => apiService.create('/autoimmune-markers', data),
-  updateAutoimmueMarker: async (id, data) => apiService.update('/autoimmune-markers', id, data),
-  deleteAutoimmueMarker: async (id) => apiService.delete('/autoimmune-markers', id),
+  getAutoimmuneMarkers: async () => apiService.getAll('/autoimmune-markers'),
+  getAutoimmuneMarker: async (id) => apiService.getById('/autoimmune-markers', id),
+  createAutoimmuneMarker: async (data) => apiService.create('/autoimmune-markers', data),
+  updateAutoimmuneMarker: async (id, data) => apiService.update('/autoimmune-markers', id, data),
+  deleteAutoimmuneMarker: async (id) => apiService.delete('/autoimmune-markers', id),
 
   // Vaccinations
   getVaccinations: async () => apiService.getAll('/vaccinations'),

@@ -10,10 +10,16 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+  const displayName = user?.name || 'User';
+  const displayEmail = user?.email || '';
+
   const handleNavigateToVaccineTrends = () => {
     router.push('/screens/VaccineTrendsScreen');
   };
@@ -125,7 +131,7 @@ export default function ProfileScreen() {
                         marginBottom: 0,
                       }}
                     >
-                      Ajay Verma
+                      {displayName}
                     </Text>
                     <Text
                       style={{
@@ -321,7 +327,7 @@ export default function ProfileScreen() {
                         />
                       <Text style={styles.vaccineType}>Email</Text>
                       </View>
-                      <Text style={styles.vaccineName}>ajay@formationve.com</Text>
+                      <Text style={styles.vaccineName}>{displayEmail || 'ajay@formationve.com'}</Text>
                     </View>
                   </View>
 

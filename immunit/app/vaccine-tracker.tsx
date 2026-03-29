@@ -2,8 +2,9 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   SafeAreaView,
@@ -13,6 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { apiService, type VaccineRecord as VaccineRecordType } from '../services/apiService';
 
 const StatusBadge = ({
   status,
@@ -91,8 +94,34 @@ const VaccineRecord = ({
   </TouchableOpacity>
 );
 
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return 'N/A';
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+}
+
 export default function VaccineTrackerScreen() {
-  const router = useRouter();
+  const routerNav = useRouter();
+  const { user } = useAuth();
+  const [records, setRecords] = useState<VaccineRecordType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.sub) { setLoading(false); return; }
+    (async () => {
+      try {
+        const data = await apiService.getVaccinations(user.sub);
+        setRecords(data.vaccinations || []);
+      } catch (e) {
+        console.log('Vaccine fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
+
+  // Fallback hardcoded data if API returns nothing
+  const displayRecords = records.length > 0 ? records : null;
 
   return (
     <LinearGradient
@@ -130,35 +159,52 @@ export default function VaccineTrackerScreen() {
           >
             <Text style={styles.sectionTitle}>Vaccination Records</Text>
 
-            <VaccineRecord
-              vaccine="COVID-19 (Pfizer-BioNTech)"
-              status="Protected"
-              administered="3/15/2024"
-              location="CVS Pharmacy, New York"
-              nextDue="9/15/2024"
-              batch="FK1234"
-              type="success"
-            />
-
-            <VaccineRecord
-              vaccine="Tetanus (Td)"
-              status="Monitor"
-              administered="8/20/2023"
-              location="City Health Center"
-              nextDue="8/20/2025"
-              batch="TD5678"
-              type="warning"
-            />
-
-            <VaccineRecord
-              vaccine="Hepatitis A"
-              status="Protected"
-              administered="6/10/2023"
-              location="Travel Clinic NYC"
-              nextDue="6/10/2025"
-              batch="HA9012"
-              type="success"
-            />
+            {loading ? (
+              <ActivityIndicator size="large" color="#0080FF" style={{ marginTop: 40 }} />
+            ) : displayRecords ? (
+              displayRecords.map((rec, idx) => (
+                <VaccineRecord
+                  key={rec.record_id || idx}
+                  vaccine={rec.vaccine_name}
+                  status={rec.protection_status === 'protected' ? 'Protected' : rec.protection_status === 'waning' ? 'Monitor' : 'Unprotected'}
+                  administered={formatDate(rec.admin_date)}
+                  location=""
+                  nextDue={formatDate(rec.next_due_date)}
+                  batch=""
+                  type={rec.protection_status === 'protected' ? 'success' : 'warning'}
+                />
+              ))
+            ) : (
+              <>
+                <VaccineRecord
+                  vaccine="COVID-19 (Pfizer-BioNTech)"
+                  status="Protected"
+                  administered="3/15/2024"
+                  location="CVS Pharmacy, New York"
+                  nextDue="9/15/2024"
+                  batch="FK1234"
+                  type="success"
+                />
+                <VaccineRecord
+                  vaccine="Tetanus (Td)"
+                  status="Monitor"
+                  administered="8/20/2023"
+                  location="City Health Center"
+                  nextDue="8/20/2025"
+                  batch="TD5678"
+                  type="warning"
+                />
+                <VaccineRecord
+                  vaccine="Hepatitis A"
+                  status="Protected"
+                  administered="6/10/2023"
+                  location="Travel Clinic NYC"
+                  nextDue="6/10/2025"
+                  batch="HA9012"
+                  type="success"
+                />
+              </>
+            )}
           </ScrollView>
         </View>
       </SafeAreaView>
