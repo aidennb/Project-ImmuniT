@@ -143,6 +143,7 @@ a:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-ra
   color: var(--text-heading);
   text-decoration: none;
 }
+.nav__logo-icon { flex-shrink: 0; }
 .nav__logo-accent { color: var(--primary); }
 .nav__links {
   display: flex;
