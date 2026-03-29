@@ -1,7 +1,8 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   SafeAreaView,
@@ -11,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { apiService, type Passport, type VaccineRecord } from '../services/apiService';
 
 const VerifiedBadge = () => (
   <View style={styles.verifiedBadge}>
@@ -53,13 +56,42 @@ const VaccinationEntry = ({
   </View>
 );
 
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return 'N/A';
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+}
+
 export default function ImmunityPassportScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [vaccines, setVaccines] = useState<VaccineRecord[]>([]);
+  const [passport, setPassport] = useState<Passport | null>(null);
+  const displayName = user?.name || 'User';
+
+  useEffect(() => {
+    if (!user?.sub) { setLoading(false); return; }
+    (async () => {
+      try {
+        const [vaxRes, passRes] = await Promise.all([
+          apiService.getVaccinations(user.sub),
+          apiService.getImmunityPassports(user.sub),
+        ]);
+        setVaccines(vaxRes.vaccinations || []);
+        if (passRes.passports?.length > 0) setPassport(passRes.passports[0]);
+      } catch (e) {
+        console.log('Passport fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
@@ -87,45 +119,44 @@ export default function ImmunityPassportScreen() {
               style={styles.profilePhoto}
             />
             <View style={styles.passportInfo}>
-              <Text style={styles.passportName}>Ajay Verma</Text>
+              <Text style={styles.passportName}>{displayName}</Text>
               </View>
           </View>
            <View style={styles.passportDetails}>
                 <View style={styles.passportDetailRow}>
-                  <Text style={styles.passportLabel}>Date of Birth</Text>
-                  <Text style={styles.passportLabel}>Nationality</Text>
+                  <Text style={styles.passportLabel}>Status</Text>
+                  <Text style={styles.passportLabel}>Verified By</Text>
                 </View>
                 <View style={styles.passportDetailRow}>
-                  <Text style={styles.passportValue}>03/13/1962</Text>
-                  <Text style={styles.passportValue}>United States</Text>
+                  <Text style={styles.passportValue}>{passport?.status || 'Active'}</Text>
+                  <Text style={styles.passportValue}>{passport?.verified_by?.split(' - ')[0] || 'Pending'}</Text>
                 </View>
               </View>
-           
+
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Verified Vaccinations</Text>
-          
-          <VaccinationEntry
-            vaccine="COVID-19 (Pfizer-BioNTech)"
-            date="3/15/2024"
-            location="CVS Pharmacy, New York"
-            batch="FK1234"
-          />
 
-          <VaccinationEntry
-            vaccine="Yellow Fever"
-            date="11/20/2023"
-            location="Travel Clinic NYC"
-            batch="YF5678"
-          />
-
-          <VaccinationEntry
-            vaccine="Hepatitis A"
-            date="6/10/2023"
-            location="Travel Clinic NYC"
-            batch="HA9012"
-          />
+          {loading ? (
+            <ActivityIndicator size="large" color="#0080FF" style={{ marginTop: 20 }} />
+          ) : vaccines.length > 0 ? (
+            vaccines.map((v, i) => (
+              <VaccinationEntry
+                key={v.record_id || i}
+                vaccine={v.vaccine_name}
+                date={formatDate(v.admin_date)}
+                location={v.manufacturer || ''}
+                batch={v.batch_number || ''}
+              />
+            ))
+          ) : (
+            <>
+              <VaccinationEntry vaccine="COVID-19 (Pfizer-BioNTech)" date="3/15/2024" location="CVS Pharmacy, New York" batch="FK1234" />
+              <VaccinationEntry vaccine="Yellow Fever" date="11/20/2023" location="Travel Clinic NYC" batch="YF5678" />
+              <VaccinationEntry vaccine="Hepatitis A" date="6/10/2023" location="Travel Clinic NYC" batch="HA9012" />
+            </>
+          )}
         </View>
 
         <View style={styles.section}>

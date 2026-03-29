@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -19,6 +20,8 @@ import Svg, {
   LinearGradient as SvgLinearGradient,
   Text as SvgText
 } from 'react-native-svg';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../services/apiService';
 
 interface RiskItemProps {
   protein: string;
@@ -26,6 +29,38 @@ interface RiskItemProps {
 }
 
 const FitnessCognitiveScreen: React.FC = () => {
+  const { user } = useAuth();
+  const [protectionScore, setProtectionScore] = useState(82);
+  const [riskProteins, setRiskProteins] = useState<{ name: string; detected: boolean }[]>([
+    { name: 'Amyloid-beta', detected: true },
+    { name: 'Tau', detected: false },
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.sub) { setLoading(false); return; }
+    (async () => {
+      try {
+        const res = await apiService.getNeuroprotectiveMarkers(user.sub);
+        const data = res.neuroprotective_data;
+        if (data) {
+          setProtectionScore(data.overall_protection_score);
+          if (data.markers) {
+            const proteins = Object.entries(data.markers).map(([name, info]) => ({
+              name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+              detected: info.status === 'low' || info.status === 'critical_elevation',
+            }));
+            setRiskProteins(proteins);
+          }
+        }
+      } catch (e) {
+        console.log('Neuro fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
+
   // Data for the cognitive protection trend curve
   const createCurvePath = (): string => {
     // Smooth exponential curve that matches reference design
@@ -91,7 +126,7 @@ const FitnessCognitiveScreen: React.FC = () => {
   const ScoreCircle: React.FC = () => (
     <View style={styles.scoreContainer}>
       <View style={styles.scoreCircle}>
-        <Text style={styles.scoreNumber}>82</Text>
+        <Text style={styles.scoreNumber}>{protectionScore}</Text>
       </View>
     </View>
   );
@@ -148,12 +183,13 @@ const FitnessCognitiveScreen: React.FC = () => {
 
           <View style={styles.neuroRiskSection}>
             <Text style={styles.neuroTitle}>Neuro-risk</Text>
-            
-            <RiskItem protein="neurodegenerative risk proteins" detected={true} />
-            
+
+            <RiskItem protein="neurodegenerative risk proteins" detected={riskProteins.some(p => p.detected)} />
+
             <View style={styles.proteinList}>
-              <Text style={styles.proteinName}>Amyloid-beta</Text>
-              <Text style={styles.proteinName}>Tau</Text>
+              {riskProteins.map((p, i) => (
+                <Text key={i} style={[styles.proteinName, p.detected && { color: '#EF4444' }]}>{p.name}</Text>
+              ))}
             </View>
           </View>
 

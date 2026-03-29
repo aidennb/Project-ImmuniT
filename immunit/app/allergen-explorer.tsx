@@ -1,7 +1,8 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -10,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { apiService, type AllergenData } from '../services/apiService';
 
 const StatusBadge = ({
   status,
@@ -72,24 +75,60 @@ const AllergenCard = ({
   </TouchableOpacity>
 );
 
+function riskToDisplay(risk: string): { status: string; type: 'warning' | 'success' | 'danger' | 'info' } {
+  switch (risk) {
+    case 'high': return { status: 'High Risk', type: 'danger' };
+    case 'moderate': return { status: 'Moderate', type: 'warning' };
+    case 'low': return { status: 'Low Risk', type: 'info' };
+    case 'very_low': return { status: 'No Reaction', type: 'success' };
+    default: return { status: risk, type: 'info' };
+  }
+}
+
 export default function AllergenExplorerScreen() {
   const router = useRouter();
-
-  const foodAllergens = [
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [foodAllergens, setFoodAllergens] = useState([
     { name: 'Shellfish', status: 'In-season Now', type: 'warning' as const },
     { name: 'Tree Nuts', status: 'In-season Now', type: 'warning' as const },
     { name: 'Peanuts', status: 'In-season Now', type: 'warning' as const },
     { name: 'Eggs', status: 'No Reaction', type: 'success' as const },
     { name: 'Soy', status: 'Flag Symptoms', type: 'danger' as const },
     { name: 'Dairy', status: 'Flag Symptoms', type: 'danger' as const },
-  ];
-
-  const environmentalAllergens = [
+  ]);
+  const [environmentalAllergens, setEnvironmentalAllergens] = useState([
     { name: 'Dust Mites', status: 'Food', type: 'info' as const },
     { name: 'Cat Dander', status: 'Food', type: 'info' as const },
     { name: 'Pollen', status: 'No Reaction', type: 'success' as const },
     { name: 'Mold', status: 'No Reaction', type: 'success' as const },
-  ];
+  ]);
+
+  useEffect(() => {
+    if (!user?.sub) { setLoading(false); return; }
+    (async () => {
+      try {
+        const res = await apiService.getAllergens(user.sub);
+        const data = res.allergen_data;
+        if (data?.food_allergens) {
+          setFoodAllergens(Object.entries(data.food_allergens).map(([name, info]) => {
+            const d = riskToDisplay(info.risk_level);
+            return { name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), status: d.status, type: d.type };
+          }));
+        }
+        if (data?.environmental_allergens) {
+          setEnvironmentalAllergens(Object.entries(data.environmental_allergens).map(([name, info]) => {
+            const d = riskToDisplay(info.risk_level);
+            return { name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), status: d.status, type: d.type };
+          }));
+        }
+      } catch (e) {
+        console.log('Allergen fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
 
   return (
     <SafeAreaView style={styles.container}>

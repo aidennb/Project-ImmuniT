@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -12,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../services/apiService';
 
 const NotificationCard = ({
   icon = null,
@@ -120,6 +122,49 @@ const NotificationCard = ({
 };
 
 export default function NotificationsScreen() {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<{title: string; description: string; type: string; time: string; isSeen: boolean}[]>([]);
+
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const [vaxRes, riskRes] = await Promise.all([
+          apiService.getVaccineRecommendations(user.sub),
+          apiService.getRiskScore(user.sub),
+        ]);
+        const notifs: typeof notifications = [];
+        // Generate notifications from urgent vaccine recommendations
+        if (vaxRes.recommendations) {
+          vaxRes.recommendations.filter(r => r.urgency === 'urgent' || r.urgency === 'high').forEach(r => {
+            notifs.push({
+              title: 'Booster Due Soon!',
+              description: `${r.vaccine_name}: ${r.recommendation}`,
+              type: 'booster',
+              time: 'Based on latest data',
+              isSeen: false,
+            });
+          });
+        }
+        // Generate notifications from critical risk flags
+        if (riskRes.critical_flags?.length > 0) {
+          riskRes.critical_flags.forEach(f => {
+            notifs.push({
+              title: 'Critical Alert',
+              description: `${f.marker}: Z-score ${f.z_score} — ${f.clinical_note || f.status}`,
+              type: 'booster',
+              time: 'Urgent',
+              isSeen: false,
+            });
+          });
+        }
+        if (notifs.length > 0) setNotifications(notifs);
+      } catch (e) {
+        // Keep default hardcoded notifications
+      }
+    })();
+  }, [user?.sub]);
+
   return (
     <LinearGradient
       colors={['#F0F7FF', '#FFFFFF', '#F2FDF6']}

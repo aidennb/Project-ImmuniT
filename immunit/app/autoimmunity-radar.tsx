@@ -1,8 +1,9 @@
 import RadarChart from '@/components/RadarChart';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   SafeAreaView,
   ScrollView,
@@ -11,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { apiService, type AutoimmuneData } from '../services/apiService';
 
 const LegendItem = ({ color, label }: { color: string; label: string }) => (
   <View style={styles.legendItem}>
@@ -21,36 +24,70 @@ const LegendItem = ({ color, label }: { color: string; label: string }) => (
 
 export default function AutoimmunityRadarScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [riskScore, setRiskScore] = useState(0);
+  const [flagged, setFlagged] = useState<string[]>([]);
+  const [recommendation, setRecommendation] = useState(
+    'Consider follow-up testing in 3-6 months or consult with a rheumatologist.',
+  );
 
-  const radarData = [
+  const [radarData, setRadarData] = useState([
     { label: 'Eczema', value: 5.1 },
     { label: 'SLE', value: 4.1 },
     { label: 'RA', value: 3.8 },
     { label: 'UC', value: 2.9 },
     { label: "Crohn's", value: 3.2 },
     { label: 'Psoriasis', value: 4.5 },
-  ];
+  ]);
 
-  const datasets = [
-    {
-      data: [4.2, 3.8, 3.5, 2.9, 3.1, 4.0], // WBC (Purple)
-      color: '#B953D5',
-      fillColor: '#B953D51A',
-      dotRadius: 4,
-    },
-    {
-      data: [3.1, 2.7, 2.5, 2.0, 2.2, 2.8], // Leukocytes (Soft Blue)
-      color: '#4CD0D9',
-      fillColor: '#4CD0D91A',
-      dotRadius: 4,
-    },
-    {
-      data: [2.7, 2.3, 2.1, 1.7, 1.9, 2.4], // Lymphocytes (Soft Green)
-      color: '#4CD964',
-      fillColor: '#4CD9641A',
-      dotRadius: 4,
-    },
-  ];
+  const [datasets, setDatasets] = useState([
+    { data: [4.2, 3.8, 3.5, 2.9, 3.1, 4.0], color: '#B953D5', fillColor: '#B953D51A', dotRadius: 4 },
+    { data: [3.1, 2.7, 2.5, 2.0, 2.2, 2.8], color: '#4CD0D9', fillColor: '#4CD0D91A', dotRadius: 4 },
+    { data: [2.7, 2.3, 2.1, 1.7, 1.9, 2.4], color: '#4CD964', fillColor: '#4CD9641A', dotRadius: 4 },
+  ]);
+
+  useEffect(() => {
+    if (!user?.sub) { setLoading(false); return; }
+    (async () => {
+      try {
+        const res = await apiService.getAutoimmuneMarkers(user.sub);
+        const data = res.autoimmune_data;
+        if (data?.markers) {
+          const markers = data.markers;
+          const markerNames = Object.keys(markers);
+          // Build radar from actual marker data
+          const newRadarData = markerNames.map(name => ({
+            label: name,
+            value: markers[name].z_score || markers[name].reactivity_level / 10,
+          }));
+          if (newRadarData.length > 0) setRadarData(newRadarData);
+
+          // Map marker values into datasets (reactivity, z-score, percentile)
+          const reactivityData = markerNames.map(n => Math.abs(markers[n].reactivity_level / 15));
+          const zScoreData = markerNames.map(n => Math.abs(markers[n].z_score));
+          const percentileData = markerNames.map(n => markers[n].population_percentile / 25);
+          setDatasets([
+            { data: reactivityData, color: '#B953D5', fillColor: '#B953D51A', dotRadius: 4 },
+            { data: zScoreData, color: '#4CD0D9', fillColor: '#4CD0D91A', dotRadius: 4 },
+            { data: percentileData, color: '#4CD964', fillColor: '#4CD9641A', dotRadius: 4 },
+          ]);
+
+          setRiskScore(data.overall_risk_score);
+          setFlagged(data.flagged_markers || []);
+          if (data.flagged_markers?.length > 0) {
+            setRecommendation(
+              `Elevated markers detected: ${data.flagged_markers.join(', ')}. Urgent consultation with a specialist is recommended.`,
+            );
+          }
+        }
+      } catch (e) {
+        console.log('Autoimmune fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user?.sub]);
 
   return (
     <SafeAreaView style={styles.container}>
