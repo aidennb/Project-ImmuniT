@@ -1,0 +1,13 @@
+  "build": {
+      "android-apk-local": {
+      "android": {
+        "buildType": "apk"
+      },
+      "local": true
+    },
+    "ios-ipa-local": {
+      "ios": {
+        "simulator": false
+      },
+      "local": true
+    },
