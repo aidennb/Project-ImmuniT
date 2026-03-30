@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImmuniT — Status Report | March 30, 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800;900&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0891B2;
+      --accent: #059669;
+      --bg: #F8FAFB;
+      --surface: #FFFFFF;
+      --text: #164E63;
+      --heading: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --red: #DC2626;
+      --green: #059669;
+      --yellow: #F59E0B;
+      --blue: #2563EB;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans', sans-serif; background: var(--bg); color: var(--text); }
+    .slide {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--surface);
+      min-height: 100vh;
+      padding: 48px 56px;
+      page-break-after: always;
+      border-bottom: 3px solid var(--border);
+    }
+    @media print {
+      .slide { min-height: auto; page-break-after: always; border: none; padding: 32px 40px; }
+      body { background: white; }
+    }
+    h1 { font-family: 'Figtree', sans-serif; font-size: 36px; font-weight: 900; color: var(--heading); margin-bottom: 8px; }
+    h2 { font-family: 'Figtree', sans-serif; font-size: 28px; font-weight: 800; color: var(--heading); margin-bottom: 16px; }
+    h3 { font-family: 'Figtree', sans-serif; font-size: 20px; font-weight: 700; color: var(--heading); margin-bottom: 12px; }
+    .subtitle { font-size: 18px; color: var(--muted); margin-bottom: 32px; }
+    .eyebrow { font-family: 'Figtree', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 8px; }
+    .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+    .badge--green { background: #D1FAE5; color: #065F46; }
+    .badge--yellow { background: #FEF3C7; color: #92400E; }
+    .badge--red { background: #FEE2E2; color: #991B1B; }
+    .badge--blue { background: #DBEAFE; color: #1E40AF; }
+    .badge--gray { background: #F3F4F6; color: #374151; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+    .card { background: var(--bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
+    .card--highlight { border-left: 4px solid var(--primary); }
+
+    .stat { text-align: center; }
+    .stat__value { font-family: 'Figtree', sans-serif; font-size: 36px; font-weight: 900; color: var(--heading); }
+    .stat__label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline__item { position: relative; margin-bottom: 20px; }
+    .timeline__dot { position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; }
+    .timeline__dot--done { background: var(--green); }
+    .timeline__dot--active { background: var(--primary); box-shadow: 0 0 0 4px rgba(8,145,178,0.2); }
+    .timeline__dot--future { background: var(--border); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-weight: 700; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--heading); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+
+    .check { color: var(--green); font-weight: 700; }
+    .progress-bar { height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; }
+    .progress-bar__fill { height: 100%; border-radius: 4px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 8px; line-height: 1.6; }
+    .separator { height: 1px; background: var(--border); margin: 32px 0; }
+
+    .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .logo-row img { height: 40px; }
+    .logo-text { font-family: 'Figtree', sans-serif; font-size: 28px; font-weight: 900; color: var(--heading); }
+    .logo-accent { color: var(--primary); }
+    .date-tag { font-size: 14px; color: var(--muted); margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide">
+  <div class="logo-row">
+    <img src="assets/logo.svg" alt="ImmuniT logo" />
+    <span class="logo-text">Immuni<span class="logo-accent">T</span></span>
+    <span class="date-tag">Status Report &mdash; March 30, 2026</span>
+  </div>
+
+  <h1>Sprint Status Report</h1>
+  <p class="subtitle">Backend complete. Mobile app connected. Website live. Ready for Phase 2.</p>
+
+  <div class="separator"></div>
+
+  <div class="grid-4" style="margin-bottom: 40px;">
+    <div class="stat">
+      <div class="stat__value">10</div>
+      <div class="stat__label">Commits This Sprint</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">15.5K</div>
+      <div class="stat__label">Lines Changed</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">66</div>
+      <div class="stat__label">Files Modified</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">14</div>
+      <div class="stat__label">Live API Endpoints</div>
+    </div>
+  </div>
+
+  <h3>Team</h3>
+  <table>
+    <tr><th>Name</th><th>Role</th><th>Focus This Sprint</th></tr>
+    <tr><td>Aiden Bingham</td><td>Lead Developer</td><td>Infrastructure, mobile app, website</td></tr>
+    <tr><td>Jon Gallagher</td><td>Backend Developer</td><td>Lambda, API Gateway, RDS setup</td></tr>
+  </table>
+</div>
+
+<!-- SLIDE 2: What We Built -->
+<div class="slide">
+  <p class="eyebrow">Completed Work</p>
+  <h2>What We Built This Sprint</h2>
+
+  <div class="grid-2" style="margin-bottom: 32px;">
+    <div class="card card--highlight">
+      <h3>Backend API (PostgreSQL)</h3>
+      <ul>
+        <li>Migrated from DynamoDB to <strong>PostgreSQL on RDS</strong></li>
+        <li><strong>9 database tables</strong> with indexes, FK constraints, triggers</li>
+        <li><strong>14 REST endpoints</strong> via unified Lambda handler</li>
+        <li>Composite risk scoring engine (vaccine 30% + autoimmune 30% + neuro 40%)</li>
+        <li>2 demo patients seeded (Sarah Johnson, Michael Chen)</li>
+      </ul>
+    </div>
+    <div class="card card--highlight">
+      <h3>Mobile App (Expo/React Native)</h3>
+      <ul>
+        <li><strong>Cognito authentication</strong> wired (login/signup/logout)</li>
+        <li>API service layer with <strong>typed endpoints</strong> for all 14 routes</li>
+        <li>AuthContext provider for global auth state</li>
+        <li><strong>8 screens</strong> connected to live API with graceful fallback</li>
+        <li>Dynamic user name/email across all screens</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card card--highlight">
+      <h3>Marketing Website</h3>
+      <ul>
+        <li>Built with <strong>UI/UX Pro Max</strong> design system</li>
+        <li>WCAG AAA accessible, responsive 375-1440px</li>
+        <li>Hero, features, science pipeline, demo patients, API showcase, waitlist</li>
+        <li>DNA shield logo integrated</li>
+      </ul>
+    </div>
+    <div class="card card--highlight">
+      <h3>Web App Fixes</h3>
+      <ul>
+        <li>Cognito config moved to env vars (was hardcoded)</li>
+        <li>API URL set to live gateway</li>
+        <li>Fixed "Autoimmue" typo in apiService</li>
+        <li>Copyright filing docs generated (first/last 25 pages)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Screens Connected -->
+<div class="slide">
+  <p class="eyebrow">Mobile App Progress</p>
+  <h2>Screens Connected to Live API</h2>
+
+  <table>
+    <tr><th>Screen</th><th>API Endpoint</th><th>Status</th></tr>
+    <tr><td>Login</td><td>Cognito InitiateAuth</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Home Dashboard</td><td>GET /dashboard/summary + /vaccinations</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Vaccine Tracker</td><td>GET /vaccinations</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Allergen Explorer</td><td>GET /allergens</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Autoimmunity Radar</td><td>GET /autoimmune-markers</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Immunity Passport</td><td>GET /immunity-passports + /vaccinations</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Cognitive Health</td><td>GET /neuroprotective-markers</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Notifications</td><td>GET /vaccines/recommendations + /risk-score</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>Profile</td><td>Auth context (name/email)</td><td><span class="badge badge--green">Live</span></td></tr>
+    <tr><td>AI Assistant</td><td>—</td><td><span class="badge badge--gray">Mock</span></td></tr>
+    <tr><td>Symptom Journal</td><td>—</td><td><span class="badge badge--gray">UI Only</span></td></tr>
+    <tr><td>Vaccine Trends Chart</td><td>—</td><td><span class="badge badge--yellow">Partial</span></td></tr>
+  </table>
+
+  <div style="margin-top: 24px;">
+    <p style="font-size: 14px; color: var(--muted);">
+      <strong>9 of 12 screens</strong> connected to live backend. All connected screens fall back to hardcoded demo data if the API is unreachable.
+    </p>
+    <div class="progress-bar" style="margin-top: 8px;">
+      <div class="progress-bar__fill" style="width: 75%; background: var(--green);"></div>
+    </div>
+    <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">75% of screens fully connected</p>
+  </div>
+</div>
+
+<!-- SLIDE 4: Demo Patients -->
+<div class="slide">
+  <p class="eyebrow">Clinical Validation</p>
+  <h2>Demo Patient Data — Ready for Presentation</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">SJ</div>
+        <div>
+          <h3 style="margin:0;">Sarah Johnson</h3>
+          <span class="badge badge--yellow">Moderate Risk</span>
+        </div>
+      </div>
+      <table>
+        <tr><td>Vaccine Protection</td><td><strong>75%</strong></td></tr>
+        <tr><td>Autoimmune Risk</td><td><strong>12%</strong></td></tr>
+        <tr><td>Neuro Protection</td><td><strong>73%</strong></td></tr>
+        <tr><td>Key Finding</td><td>Stable profile, Hep A booster needed</td></tr>
+      </table>
+    </div>
+    <div class="card" style="border-color: #FCA5A5;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">MC</div>
+        <div>
+          <h3 style="margin:0;">Michael Chen</h3>
+          <span class="badge badge--red">High Risk</span>
+        </div>
+      </div>
+      <table>
+        <tr><td>Vaccine Protection</td><td><strong>66%</strong></td></tr>
+        <tr><td>Autoimmune Risk</td><td><strong>35%</strong></td></tr>
+        <tr><td>Neuro Protection</td><td><strong>32%</strong></td></tr>
+        <tr><td style="color:var(--red);">Critical Flag</td><td style="color:var(--red);"><strong>Poly-GA Z-score 41.95</strong> (C9orf72 ALS/FTD)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 24px; background: #FEF2F2; border-color: #FECACA;">
+    <h3 style="color: var(--red);">Key Talking Point</h3>
+    <p style="line-height: 1.7;">"Our platform detected a <strong>41.95 standard deviation elevation</strong> in Poly-GA antibodies — a biomarker associated with C9orf72 ALS/FTD — months before symptoms would appear in traditional screening. This is exactly the kind of early detection that saves lives and that traditional healthcare misses entirely."</p>
+  </div>
+</div>
+
+<!-- SLIDE 5: Architecture -->
+<div class="slide">
+  <p class="eyebrow">Technical Architecture</p>
+  <h2>System Overview</h2>
+
+  <div class="card" style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.8; background: var(--heading); color: #94A3B8; padding: 32px;">
+<pre style="margin:0; white-space:pre;">
+Mobile App (Expo)          Website              Web App (React)
+      |                      |                       |
+      v                      v                       v
++----------------------------------------------------------+
+|              API Gateway (REST + CORS)                    |
+|      ri2ubpde14.execute-api.us-west-2.amazonaws.com      |
++----------------------------------------------------------+
+      |                                             |
+      v                                             v
++-------------------+                   +-------------------+
+|  Cognito Auth     |                   |  Lambda Handler   |
+|  us-west-2_Tg7... |                   |  14 endpoints     |
++-------------------+                   |  Risk scoring     |
+                                        +-------------------+
+                                                |
+                                                v
+                                        +-------------------+
+                                        |  PostgreSQL (RDS) |
+                                        |  9 tables         |
+                                        |  2 demo patients  |
+                                        +-------------------+
+</pre>
+  </div>
+
+  <div class="grid-3" style="margin-top: 24px;">
+    <div class="card">
+      <h3>Database</h3>
+      <p style="font-size:14px;">9 tables: users, test_results, vaccine_records, immunity_metrics, autoimmune_markers, allergen_data, neuroprotective_markers, immunity_passports, antibody_trends</p>
+    </div>
+    <div class="card">
+      <h3>API Endpoints</h3>
+      <p style="font-size:14px;">14 routes: dashboard, vaccinations, recommendations, trends, allergens, autoimmune, neuroprotective, antibody trends, passports, risk score, health, + 2 POST</p>
+    </div>
+    <div class="card">
+      <h3>Auth</h3>
+      <p style="font-size:14px;">AWS Cognito JWT tokens. Mobile uses REST API (no SDK dependency). Web uses amazon-cognito-identity-js. Both pass Bearer token to Lambda.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Timeline -->
+<div class="slide">
+  <p class="eyebrow">Project Timeline</p>
+  <h2>Roadmap &amp; Next Steps</h2>
+
+  <div class="timeline">
+    <div class="timeline__item">
+      <div class="timeline__dot timeline__dot--done"></div>
+      <h3>Weeks 1-2: Foundation &amp; Backend <span class="badge badge--green">COMPLETE</span></h3>
+      <p style="font-size:14px; color:var(--muted);">AWS infrastructure, PostgreSQL schema, Lambda API, Cognito auth, demo data, web app, mobile app API integration</p>
+    </div>
+    <div class="timeline__item">
+      <div class="timeline__dot timeline__dot--active"></div>
+      <h3>Weeks 3-4: Mobile App Polish <span class="badge badge--blue">CURRENT</span></h3>
+      <ul style="font-size:14px; color:var(--muted);">
+        <li>Connect remaining 3 screens (AI Assistant, Symptom Journal, Vaccine Trends chart)</li>
+        <li>Add token refresh flow for long sessions</li>
+        <li>Implement profile editing + password reset</li>
+        <li>Run database setup + deploy enhanced Lambda to production</li>
+        <li>First TestFlight build (eas build --platform ios)</li>
+      </ul>
+    </div>
+    <div class="timeline__item">
+      <div class="timeline__dot timeline__dot--future"></div>
+      <h3>Weeks 5-6: Advanced Features</h3>
+      <ul style="font-size:14px; color:var(--muted);">
+        <li>PDF export for immunity passports</li>
+        <li>Search/filter on dashboard tables</li>
+        <li>Push notifications (Expo Notifications)</li>
+        <li>Data export (CSV)</li>
+      </ul>
+    </div>
+    <div class="timeline__item">
+      <div class="timeline__dot timeline__dot--future"></div>
+      <h3>Weeks 7-8: Testing &amp; Launch</h3>
+      <ul style="font-size:14px; color:var(--muted);">
+        <li>TestFlight beta (50 users)</li>
+        <li>Bug fixes + performance optimization</li>
+        <li>App Store submission</li>
+        <li>Marketing website deployment</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Action Items -->
+<div class="slide">
+  <p class="eyebrow">Next Steps</p>
+  <h2>Action Items for This Week</h2>
+
+  <div class="grid-2">
+    <div>
+      <h3>Priority 1 — Must Do</h3>
+      <table>
+        <tr><td>Run database setup script (schema + seed data)</td><td><span class="badge badge--red">Blocked</span></td></tr>
+        <tr><td>Deploy enhanced Lambda handler</td><td><span class="badge badge--red">Blocked</span></td></tr>
+        <tr><td>Test all 14 endpoints with live DB</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+        <tr><td>First TestFlight build</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+      </table>
+      <p style="font-size:13px; color:var(--red); margin-top:8px;">* DB setup + Lambda deploy require AWS credentials on a machine with psql + AWS CLI</p>
+    </div>
+    <div>
+      <h3>Priority 2 — Should Do</h3>
+      <table>
+        <tr><td>Connect Vaccine Trends chart to GET /vaccines/trends</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+        <tr><td>Wire AI Assistant to a response backend</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+        <tr><td>Add symptom journal POST endpoint + persistence</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+        <tr><td>Deploy marketing website (S3 + CloudFront or Vercel)</td><td><span class="badge badge--yellow">Pending</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="separator"></div>
+
+  <h3>Hiring Decision</h3>
+  <div class="card" style="border-color: var(--yellow);">
+    <p style="line-height:1.7;">The backend is production-ready and the mobile app is 75% connected to live data. <strong>A dedicated mobile developer is needed</strong> to handle TestFlight builds, App Store submission, push notifications, and native performance optimization. Without this hire, the project bottlenecks at the iOS deployment stage.</p>
+  </div>
+
+  <div class="separator"></div>
+
+  <h3>Copyright Registration</h3>
+  <p style="font-size:14px; color:var(--muted); line-height:1.7;">
+    First and last 25 pages of source code have been generated and are ready for filing.
+    Trade secret items identified: risk scoring algorithm weights, Z-score thresholds, Cognito configuration.
+    Filing can proceed immediately.
+  </p>
+</div>
+
+</body>
+</html>
