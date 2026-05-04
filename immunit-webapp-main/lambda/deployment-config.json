@@ -1,0 +1,9 @@
+{
+  "api_endpoint": "https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod",
+  "api_id": "ri2ubpde14",
+  "lambda_function": "immunity-passport-api",
+  "lambda_arn": "arn:aws:lambda:us-west-2:490422579347:function:immunity-passport-api",
+  "aws_region": "us-west-2",
+  "aws_account_id": "490422579347",
+  "timestamp": "2026-01-30T16:21:53Z"
+}
