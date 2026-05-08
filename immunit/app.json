@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "immunit",
+    "name": "ImmuniT",
     "slug": "immunit",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,20 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.spacebasic.immunitapp"
+      "bundleIdentifier": "com.spacebasic.immunitapp",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ImmuniT uses your camera to scan QR codes on immunity passports.",
+        "NSMicrophoneUsageDescription": "ImmuniT uses your microphone for the AI health assistant.",
+        "NSHealthShareUsageDescription": "ImmuniT reads your health data to provide personalized immunity insights.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": []
+      }
     },
     "android": {
       "adaptiveIcon": {

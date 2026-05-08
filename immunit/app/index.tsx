@@ -132,6 +132,10 @@ export default function LoginScreen() {
               <TouchableOpacity style={styles.resetLink}>
                 <Text style={styles.resetText}>Reset Password</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity style={styles.resetLink} onPress={() => router.push('/signup')}>
+                <Text style={styles.resetText}>Don't have an account? <Text style={{ fontWeight: '600', color: '#0073E6' }}>Sign Up</Text></Text>
+              </TouchableOpacity>
             </View>
           </View>
 
