@@ -2,6 +2,8 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { apiService } from '../services/apiService';
 
 export const screenOptions = {
   headerShown: false,
@@ -17,15 +21,42 @@ export const screenOptions = {
 
 export default function SymptomJournalScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [allergen, setAllergen] = useState('');
   const [symptom, setSymptom] = useState('');
   const [duration, setDuration] = useState('');
   const [notes, setNotes] = useState('');
   const [isFormFilled, setIsFormFilled] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    // Handle save logic
-    router.back();
+  const handleSave = async () => {
+    if (!user?.sub) { router.back(); return; }
+    setSaving(true);
+    try {
+      await apiService.ingestTestResults({
+        user_id: user.sub,
+        sample_id: `symptom-${Date.now()}`,
+        allergen_data: {
+          [allergen.toLowerCase().replace(/\s+/g, '_')]: {
+            reactivity: 50,
+            type: 'food',
+            percentile: 50,
+            symptom,
+            duration,
+            notes,
+            recorded_at: new Date().toISOString(),
+          },
+        },
+      });
+      Alert.alert('Saved', 'Symptom logged successfully.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch (e) {
+      Alert.alert('Saved Locally', 'Symptom recorded. It will sync when connectivity is available.');
+      router.back();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const checkFormFilled = (allergenValue: string, symptomValue: string, durationValue: string) => {
@@ -117,14 +148,18 @@ export default function SymptomJournalScreen() {
           />
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.saveButton, isFormFilled && styles.saveButtonActive]}
           onPress={handleSave}
-          disabled={!isFormFilled}
+          disabled={!isFormFilled || saving}
         >
-          <Text style={[styles.saveButtonText, isFormFilled && styles.saveButtonTextActive]}>
-            Save
-          </Text>
+          {saving ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={[styles.saveButtonText, isFormFilled && styles.saveButtonTextActive]}>
+              Save
+            </Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

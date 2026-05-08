@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     KeyboardAvoidingView,
     Modal,
@@ -20,6 +20,8 @@ import Svg, {
     Rect,
     Text as SvgText,
 } from 'react-native-svg';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../services/apiService';
 // Import these packages when implementing actual PDF export:
 // import * as Print from 'expo-print';
 // import * as Sharing from 'expo-sharing';
@@ -50,15 +52,35 @@ interface ActionButtonProps {
 }
 
 const VaccineTrendsScreen: React.FC = () => {
+  const { user } = useAuth();
   const [selectedVaccine, setSelectedVaccine] = useState<string>('COVID-19');
   const [selectedDateRange, setSelectedDateRange] = useState<string>('Jan 2023 - Jun 2025');
   const [showVaccineModal, setShowVaccineModal] = useState<boolean>(false);
   const [showDateModal, setShowDateModal] = useState<boolean>(false);
+  const [liveVaccineData, setLiveVaccineData] = useState<Record<string, any>>({});
   const [noteToggleStates, setNoteToggleStates] = useState<{[key: string]: boolean}>({
     lastDose: true,
     nextRecommended: true,
     protectionThreshold: false,
   });
+
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const data = await apiService.getImmunityData(user.sub);
+        if (data.vaccine_metrics?.vaccines) {
+          setLiveVaccineData(data.vaccine_metrics.vaccines);
+          const vaccineNames = Object.keys(data.vaccine_metrics.vaccines);
+          if (vaccineNames.length > 0 && !vaccineNames.includes(selectedVaccine)) {
+            setSelectedVaccine(vaccineNames[0]);
+          }
+        }
+      } catch (e) {
+        // Fall back to hardcoded data
+      }
+    })();
+  }, [user?.sub]);
 
   const vaccineOptions = [
     'COVID-19',

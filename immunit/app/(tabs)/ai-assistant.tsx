@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   Keyboard,
@@ -14,6 +14,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { apiService } from '../../services/apiService';
 
 interface Message {
   id: string;
@@ -35,21 +37,34 @@ const QuickQuestionButton = ({
 );
 
 export default function AIAssistantScreen() {
+  const { user } = useAuth();
   const [askedQuickQuestion, setAskedQuickQuestion] = useState(0);
+  const [userData, setUserData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm your allergen assistant. I can help you with information about food allergies, environmental allergens, and safety tips for travel. What would you like to know?",
+      text: “Hello! I'm your ImmuniT health assistant. I can answer questions about your immunity data, vaccines, allergens, and health insights. What would you like to know?”,
       isBot: true,
       timestamp: '09:23 AM',
     },
   ]);
   const [inputText, setInputText] = useState('');
 
+  useEffect(() => {
+    if (!user?.sub) return;
+    (async () => {
+      try {
+        const data = await apiService.getImmunityData(user.sub);
+        setUserData(data);
+      } catch (e) {
+        // Continue without data
+      }
+    })();
+  }, [user?.sub]);
+
   const quickQuestions = [
     'What does my COVID immunity trend mean in comparison to my age group?',
     'How protected am I against measles',
-    
   ];
 
   const sendMessage = (text: string) => {
@@ -67,8 +82,8 @@ export default function AIAssistantScreen() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
+    Keyboard.dismiss();
 
-    // Simulate bot response
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -85,16 +100,64 @@ export default function AIAssistantScreen() {
 
   const getBotResponse = (userText: string): string => {
     const lowerText = userText.toLowerCase();
+    const vaccines = userData?.vaccine_metrics?.vaccines || {};
+    const autoimmune = userData?.autoimmune_data;
+    const neuro = userData?.neuroprotective_data;
+    const allergens = userData?.allergen_data;
 
-    if (lowerText.includes('covid') && lowerText.includes('immunity')) {
-      return 'Your antibody level is in the 80th percentile. Booster recommended if planning travel to high-risk regions.';
+    if (lowerText.includes('covid') && (lowerText.includes('immunity') || lowerText.includes('trend'))) {
+      const covid = vaccines['COVID-19'];
+      if (covid) {
+        return `Your COVID-19 antibody titer is ${covid.antibody_titer} AU/mL, placing you at the ${covid.population_percentile}th percentile for your age group. Status: ${covid.status}. Trend: ${covid.trend}. ${covid.status === 'waning' ? 'A booster is recommended.' : 'Your protection level looks good.'}`;
+      }
+      return 'I don\'t have COVID-19 data on file yet. Please complete a PepSeq test to get your antibody levels.';
     }
 
-    if (lowerText.includes('protected') || lowerText.includes('measles')) {
-      return '“Based on your records, you received the MMR vaccine in 2006. Most people retain long-term protection, but a titer test can confirm your current antibody levels.';
+    if (lowerText.includes('protected') || lowerText.includes('measles') || lowerText.includes('mmr')) {
+      const mmr = vaccines['MMR'];
+      if (mmr) {
+        return `Your MMR antibody titer is ${mmr.antibody_titer} AU/mL (${mmr.population_percentile}th percentile). Status: ${mmr.status}. You are ${mmr.status === 'protected' ? 'well protected against measles, mumps, and rubella' : 'showing waning immunity — consider a titer test'}.`;
+      }
+      return 'Based on typical vaccination schedules, most people retain long-term MMR protection. A titer test can confirm your current antibody levels.';
     }
 
-    return 'I can help you with allergen information, travel safety tips, emergency procedures, and dietary recommendations. Feel free to ask about specific allergies, travel destinations, or safety protocols!';
+    if (lowerText.includes('allergen') || lowerText.includes('allergy') || lowerText.includes('allergic')) {
+      if (allergens) {
+        const foodItems = Object.entries(allergens.food_allergens || {})
+          .filter(([_, v]: [string, any]) => v.reactivity > 40)
+          .map(([name]) => name.replace(/_/g, ' '));
+        if (foodItems.length > 0) {
+          return `You have elevated reactivity to: ${foodItems.join(', ')}. These allergens show moderate-to-high reactivity levels. Consider discussing avoidance strategies with your allergist.`;
+        }
+        return 'Your allergen profile shows mostly low reactivity levels. No high-risk food allergens detected in your latest test.';
+      }
+      return 'I don\'t have allergen data on file yet. Complete a PepSeq test to map your allergen reactivity profile.';
+    }
+
+    if (lowerText.includes('autoimmune') || lowerText.includes('risk')) {
+      if (autoimmune) {
+        const flagged = autoimmune.flagged_markers || [];
+        return `Your autoimmune risk score is ${autoimmune.overall_risk_score}%. ${flagged.length > 0 ? `Flagged markers: ${flagged.join(', ')}. Please consult a rheumatologist.` : 'No markers are currently flagged. Continue routine monitoring.'}`;
+      }
+      return 'I don\'t have autoimmune data on file. A PepSeq test can screen for autoimmune markers.';
+    }
+
+    if (lowerText.includes('neuro') || lowerText.includes('cognitive') || lowerText.includes('brain')) {
+      if (neuro) {
+        return `Your cognitive protection score is ${neuro.overall_protection_score}%. This measures neuroprotective antibodies against proteins like beta-amyloid, tau, and Poly-GA. ${neuro.overall_protection_score < 50 ? 'Your score is below average — consider discussing with a neurologist.' : 'Your neuroprotective profile looks stable.'}`;
+      }
+    }
+
+    if (lowerText.includes('vaccine') || lowerText.includes('booster')) {
+      const vaccineList = Object.entries(vaccines).map(([name, v]: [string, any]) =>
+        `${name}: ${v.protection_level}% (${v.status})`
+      );
+      if (vaccineList.length > 0) {
+        return `Here\'s your vaccine protection summary:\n${vaccineList.join('\n')}\n\nAny vaccines marked “waning” should be discussed with your provider for a booster.`;
+      }
+    }
+
+    return 'I can help you with questions about your vaccines, allergens, autoimmune markers, cognitive protection, and general health insights. Try asking about a specific topic!';
   };
 
   const handleQuickQuestion = (question: string) => {
@@ -240,9 +303,9 @@ export default function AIAssistantScreen() {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              // inputText.trim() && styles.sendButtonActive,
+              inputText.trim() && styles.sendButtonActive,
             ]}
-           // onPress={() => sendMessage(inputText)}
+            onPress={() => sendMessage(inputText)}
             disabled={!inputText.trim()}
           >
             <Image
