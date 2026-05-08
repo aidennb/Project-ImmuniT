@@ -39,8 +39,8 @@ const QuickQuestionButton = ({
 export default function AIAssistantScreen() {
   const { user } = useAuth();
   const [askedQuickQuestion, setAskedQuickQuestion] = useState(0);
-  const [userData, setUserData] = useState<any>(null);
-  const [messages, setMessages] = useState<Message[]>([
+  const [userData, setUserData] = useState(null as any);
+  const [messages, setMessages] = useState([
     {
       id: '1',
       text: “Hello! I'm your ImmuniT health assistant. I can answer questions about your immunity data, vaccines, allergens, and health insights. What would you like to know?”,
