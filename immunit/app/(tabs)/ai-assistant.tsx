@@ -43,7 +43,7 @@ export default function AIAssistantScreen() {
   const [messages, setMessages] = useState([
     {
       id: '1',
-      text: “Hello! I'm your ImmuniT health assistant. I can answer questions about your immunity data, vaccines, allergens, and health insights. What would you like to know?”,
+      text: "Hello! I'm your ImmuniT health assistant. I can answer questions about your immunity data, vaccines, allergens, and health insights. What would you like to know?",
       isBot: true,
       timestamp: '09:23 AM',
     },
@@ -153,7 +153,7 @@ export default function AIAssistantScreen() {
         `${name}: ${v.protection_level}% (${v.status})`
       );
       if (vaccineList.length > 0) {
-        return `Here\'s your vaccine protection summary:\n${vaccineList.join('\n')}\n\nAny vaccines marked “waning” should be discussed with your provider for a booster.`;
+        return `Here\'s your vaccine protection summary:\n${vaccineList.join('\n')}\n\nAny vaccines marked "waning" should be discussed with your provider for a booster.`;
       }
     }
 

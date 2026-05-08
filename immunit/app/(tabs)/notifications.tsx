@@ -123,7 +123,7 @@ const NotificationCard = ({
 
 export default function NotificationsScreen() {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<{title: string; description: string; type: string; time: string; isSeen: boolean}[]>([]);
+  const [notifications, setNotifications] = useState([] as {title: string; description: string; type: string; time: string; isSeen: boolean}[]);
 
   useEffect(() => {
     if (!user?.sub) return;
@@ -228,7 +228,7 @@ export default function NotificationsScreen() {
                     />
                   }
                   title="Good News!"
-                  description="You’re above the 90th percentile for Beta-Amyloid protection markers."
+                  description="You're above the 90th percentile for Beta-Amyloid protection markers."
                   onPress={() => {}}
                   time="3 days ago"
                   type="good"
@@ -252,7 +252,7 @@ export default function NotificationsScreen() {
                     />
                   }
                   title="Reminder"
-                  description="You haven’t logged any symptoms in 7 days"
+                  description="You haven't logged any symptoms in 7 days"
                   onPress={() => {}}
                   time="1 week ago"
                   type="reminder"
