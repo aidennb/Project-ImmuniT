@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ImmuniT — Your personalized immunity passport powered by PepSeq peptide microarray technology. Track vaccines, monitor autoimmune markers, and protect cognitive health." />
+  <title>ImmuniT — Personalized Immunity Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Noto+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Skip Link (A11y) -->
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__container">
+      <a href="#" class="nav__logo" aria-label="ImmuniT home">
+        <img src="assets/logo.svg" alt="" width="36" height="40" class="nav__logo-icon" aria-hidden="true" />
+        <span>Immuni<span class="nav__logo-accent">T</span></span>
+      </a>
+      <div class="nav__links" id="nav-links">
+        <a href="#features" class="nav__link">Features</a>
+        <a href="#science" class="nav__link">Science</a>
+        <a href="#demo" class="nav__link">Demo</a>
+        <a href="#about" class="nav__link">About</a>
+      </div>
+      <div class="nav__actions">
+        <a href="https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod/health" class="btn btn--outline" target="_blank" rel="noopener">API Status</a>
+        <a href="#waitlist" class="btn btn--primary">Join Waitlist</a>
+      </div>
+      <button class="nav__toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero__container">
+        <div class="hero__content">
+          <div class="hero__badge">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="4" fill="#059669"/></svg>
+            <span>Now in Clinical Research</span>
+          </div>
+          <h1 class="hero__title">
+            Your immune system,<br />
+            <span class="hero__title-accent">decoded.</span>
+          </h1>
+          <p class="hero__subtitle">
+            ImmuniT uses PepSeq peptide microarray technology to map your complete immune profile — vaccines, autoimmune risks, allergens, and neuroprotective markers — into one personalized health passport.
+          </p>
+          <div class="hero__cta">
+            <a href="#waitlist" class="btn btn--primary btn--lg">Get Early Access</a>
+            <a href="#demo" class="btn btn--ghost btn--lg">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><polygon points="6,4 16,10 6,16" fill="currentColor"/></svg>
+              See It In Action
+            </a>
+          </div>
+          <div class="hero__stats">
+            <div class="hero__stat">
+              <span class="hero__stat-value">100K+</span>
+              <span class="hero__stat-label">Peptides Analyzed</span>
+            </div>
+            <div class="hero__stat-divider"></div>
+            <div class="hero__stat">
+              <span class="hero__stat-value">14</span>
+              <span class="hero__stat-label">API Endpoints</span>
+            </div>
+            <div class="hero__stat-divider"></div>
+            <div class="hero__stat">
+              <span class="hero__stat-value">6</span>
+              <span class="hero__stat-label">Biomarker Categories</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero__visual">
+          <div class="hero__phone">
+            <div class="hero__phone-screen">
+              <div class="phone-header">
+                <span class="phone-header__greeting">Welcome</span>
+                <span class="phone-header__name">Sarah Johnson</span>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card__title">Immunity Summary</div>
+                <div class="phone-card__item">
+                  <span>COVID-19</span>
+                  <span class="badge badge--green">Protected</span>
+                </div>
+                <div class="phone-card__item">
+                  <span>Influenza</span>
+                  <span class="badge badge--green">Protected</span>
+                </div>
+                <div class="phone-card__item">
+                  <span>Hepatitis A</span>
+                  <span class="badge badge--yellow">Waning</span>
+                </div>
+                <div class="phone-card__score">
+                  <span>Overall Protection</span>
+                  <span class="phone-card__score-value">75%</span>
+                </div>
+              </div>
+              <div class="phone-nav">
+                <div class="phone-nav__item phone-nav__item--active">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2L2 8v10h6v-6h4v6h6V8z"/></svg>
+                  <span>Home</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 3"/></svg>
+                  <span>Tracker</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 3v5l4 2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                  <span>Passport</span>
+                </div>
+                <div class="phone-nav__item">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="6" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                  <span>Profile</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+      <div class="section__container">
+        <div class="section__header">
+          <span class="section__eyebrow">Complete Immune Intelligence</span>
+          <h2 class="section__title">Six dimensions of immune health, one platform.</h2>
+          <p class="section__subtitle">ImmuniT goes beyond traditional vaccine tracking to give you a comprehensive view of your entire immune system.</p>
+        </div>
+        <div class="features__grid">
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--blue">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="4" stroke="currentColor" stroke-width="2"/><path d="M9 14l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="feature-card__title">Vaccine Tracker</h3>
+            <p class="feature-card__desc">Track all vaccinations with real-time protection status, booster recommendations, and antibody titer trends over time.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--teal">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="10" stroke="currentColor" stroke-width="2"/><path d="M14 4v20M4 14h20M7 7l14 14M21 7L7 21" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg>
+            </div>
+            <h3 class="feature-card__title">Autoimmunity Radar</h3>
+            <p class="feature-card__desc">Monitor autoimmune markers like TPO, ANA, and GAD65 with risk scoring and specialist referral triggers.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--green">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 4c-4 0-8 3-8 8 0 6 8 14 8 14s8-8 8-14c0-5-4-8-8-8z" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Allergen Explorer</h3>
+            <p class="feature-card__desc">Map food and environmental allergen reactivity with seasonal patterns, population comparisons, and symptom tracking.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--purple">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 3L4 9v10l10 6 10-6V9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 15v8M4 9l10 6 10-6" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Cognitive Protection</h3>
+            <p class="feature-card__desc">Track neuroprotective antibodies against beta-amyloid, tau, and Poly-GA — biomarkers for early neurodegenerative detection.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--orange">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="4" y="8" width="20" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M4 14h20M10 8V5a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-card__title">Immunity Passport</h3>
+            <p class="feature-card__desc">Generate verifiable immunity passports with QR codes for travel, clinical trials, and healthcare provider sharing.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--red">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M4 20l4-8 4 4 4-10 4 6 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="24" cy="8" r="2" fill="currentColor"/></svg>
+            </div>
+            <h3 class="feature-card__title">Risk Scoring</h3>
+            <p class="feature-card__desc">Composite risk assessment combining vaccine protection, autoimmune indicators, and neuroprotective scores with clinical flags.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Science / How It Works -->
+    <section class="science" id="science">
+      <div class="section__container">
+        <div class="section__header">
+          <span class="section__eyebrow">Powered by PepSeq</span>
+          <h2 class="section__title">From 100,000 peptides to actionable insights.</h2>
+          <p class="section__subtitle">Our platform transforms raw PepSeq microarray data into clinically meaningful immune intelligence.</p>
+        </div>
+        <div class="science__steps">
+          <div class="science__step">
+            <div class="science__step-number">01</div>
+            <h3 class="science__step-title">Sample Collection</h3>
+            <p class="science__step-desc">A single blood draw is processed through PepSeq peptide microarray technology, testing reactivity against 100,000+ peptide sequences.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">02</div>
+            <h3 class="science__step-title">Z-Score Analysis</h3>
+            <p class="science__step-desc">Raw reactivity data is normalized into Z-scores against population baselines, flagging statistically significant elevations like Poly-GA at 41.95σ.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">03</div>
+            <h3 class="science__step-title">Risk Classification</h3>
+            <p class="science__step-desc">Our algorithm classifies markers across vaccine protection, autoimmune risk, allergen reactivity, and neuroprotective status into actionable categories.</p>
+          </div>
+          <div class="science__connector" aria-hidden="true"></div>
+          <div class="science__step">
+            <div class="science__step-number">04</div>
+            <h3 class="science__step-title">Personalized Dashboard</h3>
+            <p class="science__step-desc">Results appear in your mobile app within minutes — with trend tracking, booster recommendations, and critical alerts for specialist referrals.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Demo / Case Study -->
+    <section class="demo" id="demo">
+      <div class="section__container">
+        <div class="section__header">
+          <span class="section__eyebrow">Real Patient Data</span>
+          <h2 class="section__title">Early detection that traditional healthcare misses.</h2>
+        </div>
+        <div class="demo__grid">
+          <div class="demo__card demo__card--sarah">
+            <div class="demo__card-header">
+              <div class="demo__avatar">SJ</div>
+              <div>
+                <h3 class="demo__name">Sarah Johnson</h3>
+                <span class="demo__risk demo__risk--moderate">Moderate Risk</span>
+              </div>
+            </div>
+            <div class="demo__metrics">
+              <div class="demo__metric">
+                <span class="demo__metric-label">Vaccine Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--green" style="width: 75%"></div>
+                </div>
+                <span class="demo__metric-value">75%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Autoimmune Risk</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--blue" style="width: 12%"></div>
+                </div>
+                <span class="demo__metric-value">12%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Neuro Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--teal" style="width: 73%"></div>
+                </div>
+                <span class="demo__metric-value">73%</span>
+              </div>
+            </div>
+            <p class="demo__insight">Stable immune profile with seasonal pollen allergy. Hepatitis A booster recommended.</p>
+          </div>
+          <div class="demo__card demo__card--michael">
+            <div class="demo__card-header">
+              <div class="demo__avatar demo__avatar--alert">MC</div>
+              <div>
+                <h3 class="demo__name">Michael Chen</h3>
+                <span class="demo__risk demo__risk--high">High Risk</span>
+              </div>
+            </div>
+            <div class="demo__metrics">
+              <div class="demo__metric">
+                <span class="demo__metric-label">Vaccine Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--yellow" style="width: 66%"></div>
+                </div>
+                <span class="demo__metric-value">66%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Autoimmune Risk</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--orange" style="width: 35%"></div>
+                </div>
+                <span class="demo__metric-value">35%</span>
+              </div>
+              <div class="demo__metric">
+                <span class="demo__metric-label">Neuro Protection</span>
+                <div class="demo__bar">
+                  <div class="demo__bar-fill demo__bar-fill--red" style="width: 32%"></div>
+                </div>
+                <span class="demo__metric-value">32%</span>
+              </div>
+            </div>
+            <div class="demo__alert">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2L2 18h16L10 2z" stroke="#DC2626" stroke-width="2"/><path d="M10 8v4M10 14v1" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/></svg>
+              <div>
+                <strong>Critical: Poly-GA Z-score 41.95</strong>
+                <p>C9orf72 ALS/FTD indicator detected. Urgent neurological referral recommended.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="demo__footnote">Demo data based on anonymized clinical research. ImmuniT detected Michael's neurodegenerative biomarker elevation months before symptoms would appear in traditional screening.</p>
+      </div>
+    </section>
+
+    <!-- API Section -->
+    <section class="api-section" id="api">
+      <div class="section__container">
+        <div class="api-section__layout">
+          <div class="api-section__info">
+            <span class="section__eyebrow">Developer-Ready</span>
+            <h2 class="section__title">Production API, live today.</h2>
+            <p class="section__subtitle">14 RESTful endpoints backed by PostgreSQL on AWS. Cognito authentication, CORS-enabled, sub-500ms response times.</p>
+            <div class="api-section__endpoints">
+              <code>GET /dashboard/summary</code>
+              <code>GET /vaccines/recommendations</code>
+              <code>GET /autoimmune-markers</code>
+              <code>GET /neuroprotective-markers</code>
+              <code>GET /allergens</code>
+              <code>GET /antibody-trends</code>
+              <code>GET /risk-score</code>
+              <code>GET /immunity-passports</code>
+            </div>
+          </div>
+          <div class="api-section__code">
+            <div class="code-block">
+              <div class="code-block__header">
+                <span class="code-block__dot code-block__dot--red"></span>
+                <span class="code-block__dot code-block__dot--yellow"></span>
+                <span class="code-block__dot code-block__dot--green"></span>
+                <span class="code-block__title">curl — Risk Score</span>
+              </div>
+              <pre class="code-block__body"><code><span class="code-kw">curl</span> <span class="code-str">"https://ri2ubpde14.execute-api\
+  .us-west-2.amazonaws.com/prod\
+  /risk-score?user_id=c3d4e5f6..."</span>
+
+<span class="code-comment"># Response</span>
+{
+  <span class="code-key">"composite_risk_score"</span>: <span class="code-val">71.8</span>,
+  <span class="code-key">"risk_level"</span>: <span class="code-str">"critical"</span>,
+  <span class="code-key">"critical_flags"</span>: [{
+    <span class="code-key">"marker"</span>: <span class="code-str">"Poly_GA"</span>,
+    <span class="code-key">"z_score"</span>: <span class="code-val">41.95</span>,
+    <span class="code-key">"status"</span>: <span class="code-str">"critical_elevation"</span>
+  }]
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Waitlist / CTA -->
+    <section class="waitlist" id="waitlist">
+      <div class="section__container">
+        <div class="waitlist__content">
+          <h2 class="waitlist__title">Ready to decode your immunity?</h2>
+          <p class="waitlist__subtitle">Join the waitlist for early access to ImmuniT. Be among the first to get your personalized immune profile.</p>
+          <form class="waitlist__form" onsubmit="event.preventDefault(); document.getElementById('waitlist-success').hidden = false; this.hidden = true;">
+            <div class="waitlist__input-group">
+              <label for="waitlist-email" class="sr-only">Email address</label>
+              <input type="email" id="waitlist-email" class="waitlist__input" placeholder="Enter your email" required aria-label="Email address" />
+              <button type="submit" class="btn btn--primary btn--lg">Join Waitlist</button>
+            </div>
+          </form>
+          <p class="waitlist__success" id="waitlist-success" hidden>Thank you! We'll be in touch soon.</p>
+          <p class="waitlist__note">HIPAA-compliant. Your data is encrypted end-to-end.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about" id="about">
+      <div class="section__container">
+        <div class="about__grid">
+          <div>
+            <span class="section__eyebrow">About ImmuniT</span>
+            <h2 class="section__title">Built at the intersection of immunology and technology.</h2>
+            <p class="about__text">ImmuniT was born from clinical research at ASU, where PepSeq peptide microarray technology revealed that comprehensive immune profiling could detect health risks months before traditional screening.</p>
+            <p class="about__text">Our platform transforms complex peptide reactivity data into clear, actionable insights — from vaccine booster timing to early neurodegenerative biomarker detection.</p>
+          </div>
+          <div class="about__tech">
+            <h3 class="about__tech-title">Tech Stack</h3>
+            <div class="about__tech-grid">
+              <div class="about__tech-item">
+                <span class="about__tech-label">Frontend</span>
+                <span>React Native (Expo)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Backend</span>
+                <span>AWS Lambda + API Gateway</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Database</span>
+                <span>PostgreSQL (RDS)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Auth</span>
+                <span>AWS Cognito (JWT)</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Data Science</span>
+                <span>PepSeq + Z-Score Analysis</span>
+              </div>
+              <div class="about__tech-item">
+                <span class="about__tech-label">Compliance</span>
+                <span>HIPAA + AES-256</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__container">
+      <div class="footer__top">
+        <div>
+          <span class="footer__brand">
+            <img src="assets/logo.svg" alt="" width="28" height="32" style="display:inline-block;vertical-align:middle;margin-right:8px" aria-hidden="true" />
+            Immuni<span class="nav__logo-accent">T</span>
+          </span>
+          <p class="footer__tagline">Personalized immunity intelligence<br/>powered by PepSeq technology.</p>
+        </div>
+        <div class="footer__links">
+          <div class="footer__col">
+            <span class="footer__col-title">Product</span>
+            <a href="#features">Features</a>
+            <a href="#demo">Demo</a>
+            <a href="#api">API</a>
+          </div>
+          <div class="footer__col">
+            <span class="footer__col-title">Company</span>
+            <a href="#about">About</a>
+            <a href="#science">Research</a>
+            <a href="#waitlist">Contact</a>
+          </div>
+          <div class="footer__col">
+            <span class="footer__col-title">Legal</span>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">HIPAA Notice</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; 2026 ImmuniT. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    const toggle = document.getElementById('nav-toggle');
+    const links = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', !expanded);
+      links.classList.toggle('nav__links--open');
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Close mobile nav if open
+          links.classList.remove('nav__links--open');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('.feature-card, .science__step, .demo__card, .api-section__code').forEach(el => {
+      el.classList.add('animate-in');
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
