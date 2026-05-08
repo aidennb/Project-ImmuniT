@@ -100,13 +100,13 @@ Demo patient data is pre-loaded showing vaccine protection levels, autoimmune ma
 ---
 
 ## Privacy Policy URL
-https://aidennb.github.io/project-immunit/privacy-policy.html
+https://aidennb.github.io/Project-ImmuniT/privacy-policy.html
 
 ## Support URL
-https://aidennb.github.io/project-immunit/
+https://aidennb.github.io/Project-ImmuniT/
 
 ## Marketing URL
-https://aidennb.github.io/project-immunit/
+https://aidennb.github.io/Project-ImmuniT/
 
 ---
 
