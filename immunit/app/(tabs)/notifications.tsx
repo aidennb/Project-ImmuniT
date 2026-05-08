@@ -129,34 +129,20 @@ export default function NotificationsScreen() {
     if (!user?.sub) return;
     (async () => {
       try {
-        const [vaxRes, riskRes] = await Promise.all([
-          apiService.getVaccineRecommendations(user.sub),
-          apiService.getRiskScore(user.sub),
-        ]);
+        const vaxRes = await apiService.getVaccineRecommendations(user.sub);
         const notifs: typeof notifications = [];
-        // Generate notifications from urgent vaccine recommendations
         if (vaxRes.recommendations) {
-          vaxRes.recommendations.filter(r => r.urgency === 'urgent' || r.urgency === 'high').forEach(r => {
-            notifs.push({
-              title: 'Booster Due Soon!',
-              description: `${r.vaccine_name}: ${r.recommendation}`,
-              type: 'booster',
-              time: 'Based on latest data',
-              isSeen: false,
+          vaxRes.recommendations
+            .filter(r => r.urgency === 'urgent' || r.urgency === 'high')
+            .forEach(r => {
+              notifs.push({
+                title: 'Booster Due Soon!',
+                description: `${r.vaccine_name}: ${r.recommendation}`,
+                type: 'booster',
+                time: 'Based on latest data',
+                isSeen: false,
+              });
             });
-          });
-        }
-        // Generate notifications from critical risk flags
-        if (riskRes.critical_flags?.length > 0) {
-          riskRes.critical_flags.forEach(f => {
-            notifs.push({
-              title: 'Critical Alert',
-              description: `${f.marker}: Z-score ${f.z_score} — ${f.clinical_note || f.status}`,
-              type: 'booster',
-              time: 'Urgent',
-              isSeen: false,
-            });
-          });
         }
         if (notifs.length > 0) setNotifications(notifs);
       } catch (e) {

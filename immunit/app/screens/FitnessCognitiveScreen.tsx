@@ -41,7 +41,7 @@ const FitnessCognitiveScreen: React.FC = () => {
     if (!user?.sub) { setLoading(false); return; }
     (async () => {
       try {
-        const res = await apiService.getNeuroprotectiveMarkers(user.sub);
+        const res = await apiService.getImmunityData(user.sub);
         const data = res.neuroprotective_data;
         if (data) {
           setProtectionScore(data.overall_protection_score);

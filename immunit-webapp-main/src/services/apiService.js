@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://ri2ubpde14.execute-api.us-west-2.amazonaws.com/prod';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://q1x9ernlsk.execute-api.us-west-2.amazonaws.com/dev';
+const API_KEY = process.env.REACT_APP_API_KEY || 'f5D1v4LzdU6dJIYhnOIZjaRlJ3rczEza6crRq0aS';
 
 const getAuthHeaders = async () => {
   const idToken = await authService.getIdToken();
   return {
     'Authorization': `Bearer ${idToken}`,
+    'x-api-key': API_KEY,
     'Content-Type': 'application/json'
   };
 };

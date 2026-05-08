@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { apiService, type Passport, type VaccineRecord } from '../services/apiService';
+import { apiService, type VaccineRecord } from '../services/apiService';
 
 const VerifiedBadge = () => (
   <View style={styles.verifiedBadge}>
@@ -56,9 +56,9 @@ const VaccinationEntry = ({
   </View>
 );
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'N/A';
-  const d = new Date(dateStr);
+function formatDate(ts: number | string | null): string {
+  if (!ts) return 'N/A';
+  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
   return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
 }
 
@@ -67,19 +67,14 @@ export default function ImmunityPassportScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [vaccines, setVaccines] = useState<VaccineRecord[]>([]);
-  const [passport, setPassport] = useState<Passport | null>(null);
   const displayName = user?.name || 'User';
 
   useEffect(() => {
     if (!user?.sub) { setLoading(false); return; }
     (async () => {
       try {
-        const [vaxRes, passRes] = await Promise.all([
-          apiService.getVaccinations(user.sub),
-          apiService.getImmunityPassports(user.sub),
-        ]);
-        setVaccines(vaxRes.vaccinations || []);
-        if (passRes.passports?.length > 0) setPassport(passRes.passports[0]);
+        const vaxRes = await apiService.getVaccineHistory(user.sub);
+        setVaccines(vaxRes.vaccine_history || []);
       } catch (e) {
         console.log('Passport fetch error:', e);
       } finally {
@@ -128,8 +123,8 @@ export default function ImmunityPassportScreen() {
                   <Text style={styles.passportLabel}>Verified By</Text>
                 </View>
                 <View style={styles.passportDetailRow}>
-                  <Text style={styles.passportValue}>{passport?.status || 'Active'}</Text>
-                  <Text style={styles.passportValue}>{passport?.verified_by?.split(' - ')[0] || 'Pending'}</Text>
+                  <Text style={styles.passportValue}>Active</Text>
+                  <Text style={styles.passportValue}>ImmuniT Platform</Text>
                 </View>
               </View>
 

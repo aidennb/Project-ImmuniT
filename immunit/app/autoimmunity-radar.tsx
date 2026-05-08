@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { apiService, type AutoimmuneData } from '../services/apiService';
+import { apiService } from '../services/apiService';
 
 const LegendItem = ({ color, label }: { color: string; label: string }) => (
   <View style={styles.legendItem}>
@@ -51,7 +51,7 @@ export default function AutoimmunityRadarScreen() {
     if (!user?.sub) { setLoading(false); return; }
     (async () => {
       try {
-        const res = await apiService.getAutoimmuneMarkers(user.sub);
+        const res = await apiService.getImmunityData(user.sub);
         const data = res.autoimmune_data;
         if (data?.markers) {
           const markers = data.markers;

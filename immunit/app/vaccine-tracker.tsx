@@ -17,6 +17,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { apiService, type VaccineRecord as VaccineRecordType } from '../services/apiService';
 
+function tsToDate(ts: number | string | null): string {
+  if (!ts) return 'N/A';
+  const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+}
+
 const StatusBadge = ({
   status,
   type = 'default',
@@ -110,8 +116,8 @@ export default function VaccineTrackerScreen() {
     if (!user?.sub) { setLoading(false); return; }
     (async () => {
       try {
-        const data = await apiService.getVaccinations(user.sub);
-        setRecords(data.vaccinations || []);
+        const data = await apiService.getVaccineHistory(user.sub);
+        setRecords(data.vaccine_history || []);
       } catch (e) {
         console.log('Vaccine fetch error:', e);
       } finally {
@@ -167,10 +173,10 @@ export default function VaccineTrackerScreen() {
                   key={rec.record_id || idx}
                   vaccine={rec.vaccine_name}
                   status={rec.protection_status === 'protected' ? 'Protected' : rec.protection_status === 'waning' ? 'Monitor' : 'Unprotected'}
-                  administered={formatDate(rec.admin_date)}
-                  location=""
-                  nextDue={formatDate(rec.next_due_date)}
-                  batch=""
+                  administered={tsToDate(rec.admin_date)}
+                  location={rec.location || ''}
+                  nextDue={tsToDate(rec.next_due_date)}
+                  batch={rec.batch_number || ''}
                   type={rec.protection_status === 'protected' ? 'success' : 'warning'}
                 />
               ))

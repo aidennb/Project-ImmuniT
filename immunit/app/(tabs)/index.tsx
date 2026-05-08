@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { apiService, type DashboardSummary, type VaccineRecord } from '../../services/apiService';
+import { apiService } from '../../services/apiService';
 
 const StatusBadge = ({
   status,
@@ -85,8 +85,7 @@ const FeatureCard = ({
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
-  const [vaccines, setVaccines] = useState<VaccineRecord[]>([]);
+  const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -96,14 +95,9 @@ export default function HomeScreen() {
     }
     (async () => {
       try {
-        const [dashData, vaxData] = await Promise.all([
-          apiService.getDashboard(user.sub),
-          apiService.getVaccinations(user.sub),
-        ]);
-        setDashboard(dashData);
-        setVaccines(vaxData.vaccinations || []);
+        const data = await apiService.getDashboard(user.sub);
+        setDashboard(data);
       } catch (e) {
-        // Fall back to showing the UI without data
         console.log('API fetch error (using fallback UI):', e);
       } finally {
         setLoading(false);
@@ -111,21 +105,20 @@ export default function HomeScreen() {
     })();
   }, [user?.sub]);
 
-  const displayName = dashboard?.user
-    ? `${dashboard.user.first_name} ${dashboard.user.last_name}`
-    : user?.name || 'User';
+  const displayName = user?.name || 'User';
 
-  const protectedCount = dashboard?.vaccine_summary?.protected ?? 0;
-  const totalVaccines = dashboard?.vaccine_summary?.total ?? 0;
-  const waningCount = dashboard?.vaccine_summary?.waning ?? 0;
+  const protectedCount = dashboard?.protected_count ?? 0;
+  const totalVaccines = dashboard?.total_vaccines ?? 0;
+  const waningCount = dashboard?.waning_count ?? 0;
 
   // Build vaccine status items from real data or fallback
-  const vaccineItems = vaccines.length > 0
-    ? vaccines.slice(0, 3).map(v => ({
-        name: v.vaccine_name.replace(/\s*\(.*\)/, ''),
-        status: v.protection_status === 'protected' ? 'Protected'
-          : v.protection_status === 'waning' ? 'Monitor' : 'Unprotected',
-        type: (v.protection_status === 'protected' ? 'success' : 'warning') as 'success' | 'warning',
+  const vaccineMetrics = dashboard?.vaccine_metrics || {};
+  const vaccineItems = Object.keys(vaccineMetrics).length > 0
+    ? Object.entries(vaccineMetrics).slice(0, 3).map(([name, v]: [string, any]) => ({
+        name: name.replace(/_/g, ' '),
+        status: v.status === 'protected' ? 'Protected'
+          : v.status === 'waning' ? 'Monitor' : 'Unprotected',
+        type: (v.status === 'protected' ? 'success' : 'warning') as 'success' | 'warning',
       }))
     : [
         { name: 'COVID-19', status: 'Protected', type: 'success' as const },

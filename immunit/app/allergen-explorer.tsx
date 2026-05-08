@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { apiService, type AllergenData } from '../services/apiService';
+import { apiService } from '../services/apiService';
 
 const StatusBadge = ({
   status,
@@ -108,7 +108,7 @@ export default function AllergenExplorerScreen() {
     if (!user?.sub) { setLoading(false); return; }
     (async () => {
       try {
-        const res = await apiService.getAllergens(user.sub);
+        const res = await apiService.getImmunityData(user.sub);
         const data = res.allergen_data;
         if (data?.food_allergens) {
           setFoodAllergens(Object.entries(data.food_allergens).map(([name, info]) => {
